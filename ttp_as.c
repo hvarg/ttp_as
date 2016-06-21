@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <libxml/parser.h>
+#include "xhstt_parser.h"
 
 int main(int argc, const char * args[])
 {
@@ -8,15 +8,9 @@ int main(int argc, const char * args[])
     printf("Modo de uso: ./ttp_as archivo.xml\n");
     return EXIT_FAILURE;
   }
-  char    *filename = (char*) args[1];
-  xmlDoc  *document = xmlReadFile(filename, NULL, 0);
-  xmlNode *root     = xmlDocGetRootElement(document),
-          *node;
-  xmlFreeDoc(document);
 
-  printf("Root is <%s> (%i)\n", root->name, root->type);
-  for (node = root->children; node; node = node->next)
-    printf("\t Child is <%s> (%i)\n", node->name, node->type);
+	parser((char *) args[1]);
+
   return EXIT_SUCCESS;
 }
 
