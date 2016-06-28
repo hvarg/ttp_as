@@ -1,0 +1,101 @@
+\begin{thebibliography}{10}
+
+\bibitem{bish2011planning}
+Douglas~R Bish.
+\newblock Planning for a bus-based evacuation.
+\newblock {\em OR spectrum}, 33(3):629--654, 2011.
+
+\bibitem{goerigk2012robust}
+Marc Goerigk and Bob Gr{\"u}n.
+\newblock The robust bus evacuation problem.
+\newblock Technical report, Technical Report, Fachbereich Mathematik, Technical
+  University of Kaiserslautern, 2012.
+
+\bibitem{goerigk2013branch}
+Marc Goerigk, Bob Gr{\"u}n, and Philipp He{\ss}ler.
+\newblock Branch and bound algorithms for the bus evacuation problem.
+\newblock {\em Computers \& Operations Research}, 40(12):3010--3020, 2013.
+
+\bibitem{he2009optimal}
+Shiwei He, Li~Zhang, Rui Song, Yi~Wen, and Di~Wu.
+\newblock Optimal transit routing problem for emergency evacuations.
+\newblock In {\em Transportation Research Board 88th Annual Meeting}, number
+  09-0931, 2009.
+
+\bibitem{kiefer2006incrementalism}
+John~J Kiefer and Robert~S Montjoy.
+\newblock Incrementalism before the storm: Network performance for the
+  evacuation of new orleans.
+\newblock {\em Public Administration Review}, 66(s1):122--130, 2006.
+
+\bibitem{litman2006lessons}
+Todd Litman.
+\newblock Lessons from katrina and rita: What major disasters can teach
+  transportation planners.
+\newblock {\em Journal of Transportation Engineering}, 132(1):11--18, 2006.
+
+\bibitem{liu2008corridor}
+Yue Liu, Gang-Len Chang, Ying Liu, and Xiaorong Lai.
+\newblock Corridor-based emergency evacuation system for washington, dc: system
+  development and case study.
+\newblock {\em Transportation Research Record: Journal of the Transportation
+  Research Board}, 2041(1):58--67, 2008.
+
+\bibitem{liu2011emergency}
+Yue Liu and Jie Yu.
+\newblock Emergency evacuation planning for highly populated urban zones: A
+  transit-based solution and optimal operational strategies.
+\newblock {\em Edited by Burak Eksioglu}, page~59, 2011.
+
+\bibitem{margulis2006hurricane}
+Leandro Margulis, Pablo Charosky, Juan Fernandez, and Martha~A Centeno.
+\newblock Hurricane evacuation decision-support model for bus dispatch.
+\newblock In {\em Fourth LACCEI International Latin American and Caribbean
+  Conference for Engineering and Technology (LACCET ‘2006),“Breaking
+  Frontiers and Barriers in Engineering: Education, Research, and Practice},
+  pages 21--23, 2006.
+
+\bibitem{naghawi2011operation}
+Hana Naghawi and Brian Wolshon.
+\newblock Operation of multimodal transport system during mass evacuations.
+\newblock {\em Proceedings of 90th Annual Meeting of the Transportation
+  Reserach Board}, 11(1843), 2011.
+
+\bibitem{naghawi2011performance}
+Hana Naghawi and Brian Wolshon.
+\newblock Performance of traffic networks during multimodal evacuations:
+  Simulation-based assessment.
+\newblock {\em Proceedings of 90th Annual Meeting of the Transportation
+  Reserach Board}, 11(1803), 2011.
+
+\bibitem{perkins2001modeling}
+Judy~A Perkins, Ibibia~Karisemie Dabipi, and Lee~D Han.
+\newblock Modeling transit issues unique to hurricane evacuations: North
+  carolina's small urban and rural areas.
+\newblock Technical report, 2001.
+
+\bibitem{sayyady2007optimizing}
+Fatemeh Sayyady.
+\newblock {\em Optimizing the use of public transit system in no-notice
+  evacuations in urban areas}.
+\newblock PhD thesis, Mississippi State University, 2007.
+
+\bibitem{sayyady2010optimizing}
+Fatemeh Sayyady and Sandra~D Eksioglu.
+\newblock Optimizing the use of public transit system during no-notice
+  evacuation of urban areas.
+\newblock {\em Computers and Industrial Engineering}, 59(4):488--495, 2010.
+
+\bibitem{tunc2011optimizing}
+Huseyin Tunc, Burak Eksioglu, and Sandra~D Eksioglu.
+\newblock Optimizing the use of transit system with information updates during
+  no-notice evacuations.
+\newblock In {\em IIE Annual Conference. Proceedings}, page~1. Institute of
+  Industrial Engineers-Publisher, 2011.
+
+\bibitem{wolshon2002planning}
+Brian Wolshon.
+\newblock Planning for the evacuation of new orleans.
+\newblock {\em ITE journal}, 72(2), 2002.
+
+\end{thebibliography}
