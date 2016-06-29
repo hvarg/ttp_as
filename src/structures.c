@@ -64,7 +64,6 @@ struct instance *new_instance(char *name)
 
 struct event *new_event(short duration)
 {
-  int i;
   struct event *ev = (struct event *) malloc(sizeof(struct event));
   ev->duration = duration;
   ev->class = -1; ev->room = -1; ev->teacher = -1;

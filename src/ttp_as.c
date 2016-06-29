@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "xhstt_parser.h"
+#include "structures.h"
 
 int main(int argc, const char * args[])
 {
@@ -8,8 +9,9 @@ int main(int argc, const char * args[])
     printf("Modo de uso: ./ttp_as archivo.xml\n");
     return EXIT_FAILURE;
   }
-
-	parser((char *) args[1]);
+  struct instance **ins;
+  if ( !(ins = parser((char *) args[1])) )
+    return EXIT_FAILURE;
 
   return EXIT_SUCCESS;
 }

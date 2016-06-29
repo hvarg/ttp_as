@@ -5,5 +5,8 @@ OUT = ttp_as
 all: $(FILES) $(HEADERS)
 	gcc -ggdb -o $(OUT) `xml2-config --cflags` `xml2-config --libs` $(FILES)
 
+wall: $(FILES) $(HEADERS)
+	gcc -Wall -o $(OUT) `xml2-config --cflags` `xml2-config --libs` $(FILES)
+
 clean:
 	rm $(OUT)

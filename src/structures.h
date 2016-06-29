@@ -20,15 +20,13 @@ void list_del(struct list *alist);
 
 /***********************************/
 struct instance{
-  char *name;
-  size_t s_time, s_teacher, s_room, s_class, s_event;
-  char **times, **teachers, **rooms, **classes;
+  char  *name, **times, **teachers, **rooms, **classes;
+  short s_time, s_teacher, s_room, s_class, s_event;
   struct event **events;
 };
 
 struct event{
-  short duration;
-  size_t class, teacher, room;
+  short duration, class, teacher, room;
 };
 
 struct instance *new_instance (char *name);

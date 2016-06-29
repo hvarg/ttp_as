@@ -21,13 +21,14 @@ static char _STR_INSTANCES_[] = "Instances",
             _STR_CLASS_[]     = "Class",
             _STR_ID_[]        = "Id",
             _STR_DURATION_[]  = "Duration",
+            _STR_ROLE_[]      = "Role",
             _STR_REFERENCE_[] = "Reference";
 
 xmlNode *get_next(xmlNode *actual, char *string)
 {
   xmlNode *node;
   for (node = actual->next; node; node = node->next) {
-    if ( !strcmp(node->name, string) )
+    if ( !strcmp((char *) node->name, string) )
       return node;
   }
   return NULL;
@@ -35,7 +36,7 @@ xmlNode *get_next(xmlNode *actual, char *string)
 
 xmlNode *get_child(xmlNode *root, char *string)
 {
-  if ( !strcmp(root->children->name, string) )
+  if ( !strcmp((char *) root->children->name, string) )
     return root->children;
   return get_next(root->children, string);
 }
@@ -45,7 +46,7 @@ unsigned int count_childs(xmlNode *root, char *string)
   xmlNode *node;
   unsigned int count = 0;
   for (node = root->children; node; node = node->next) {
-    if (!strcmp(node->name, string))
+    if (!strcmp((char *) node->name, string))
       count++;
   }
   return count;
@@ -55,8 +56,8 @@ char * get_attr(xmlNode *node, char *string)
 {
   xmlAttr *attr;
   for (attr = node->properties; attr; attr = attr->next) {
-    if (!strcmp(attr->name, string))
-      return xmlNodeListGetString(node->doc, attr->children, 1);
+    if (!strcmp((char *) attr->name, string))
+      return (char *) xmlNodeListGetString(node->doc, attr->children, 1);
   }
   return NULL;
 }
@@ -70,13 +71,13 @@ void print_childs(xmlNode *root)
   }
 }
 
-int parser(char *filename)
+struct instance **parser(char *filename)
 {
   xmlDoc  *document = xmlReadFile(filename, NULL, 0);
   xmlNode *root     = xmlDocGetRootElement(document),
-          *node, *n_inst, *n_time, *n_res, *n_event, *tmp;
-  size_t  s_ins,  i, j, k,
-          sr=0, sc=0, st=0;
+          *node, *n_inst, *n_time, *n_res, *n_event, *tmp, *aux;
+  short s_ins,  i, j, k,
+        sr=0, sc=0, st=0;
   struct instance **instances;
   char *ref, *value;
 
@@ -85,7 +86,7 @@ int parser(char *filename)
 
   if (!s_ins) {
     fprintf(stderr, "%s has no instances.", filename);
-    return -1;
+    return NULL;
   }
 
   instances = malloc(s_ins * sizeof(struct instance *));
@@ -94,6 +95,7 @@ int parser(char *filename)
        n_inst;
        n_inst = get_next(n_inst, _STR_INSTANCE_), i++) {
     instances[i] = new_instance(get_attr(n_inst, _STR_ID_));
+    //printf("%s\n", instances[i]->name); fflush(stdout);
 
     /* Obteniendo los Times. */
     n_time               = get_child(n_inst, _STR_TIMES_);
@@ -105,19 +107,19 @@ int parser(char *filename)
       instances[i]->times[j] = get_attr(node, _STR_ID_);
     }
 
+    //printf("Times\n"); fflush(stdout);
     /* Obteniendo los Resources. */
     n_res = get_child(n_inst, _STR_RESOURCES_);
     for (node = get_child(n_res, _STR_RESOURCE_);
          node;
          node = get_next(node, _STR_RESOURCE_)) {
-      //TODO verificar el null como primer arg.
       ref = get_attr( get_child(node, _STR_RTYPE_), _STR_REFERENCE_ );
       if      ( !strcmp(ref, _STR_ROOM_) )        instances[i]->s_room++;
       else if ( !strcmp(ref, _STR_TEACHER_) )     instances[i]->s_teacher++;
       else if ( !strcmp(ref, _STR_CLASS_) )       instances[i]->s_class++;
       else {
         fprintf(stderr, "Undefined resource type.\n");
-        return -1;
+        return NULL;
       }
     }
 
@@ -128,7 +130,6 @@ int parser(char *filename)
     for (node = get_child(n_res, _STR_RESOURCE_);
          node;
          node = get_next(node, _STR_RESOURCE_)) {
-      //TODO verificar el null como primer arg.
       ref = get_attr( get_child(node, _STR_RTYPE_), _STR_REFERENCE_ );
       if ( !strcmp(ref, _STR_ROOM_) )
         instances[i]->rooms[sr++]    = get_attr(node, _STR_ID_);
@@ -138,6 +139,7 @@ int parser(char *filename)
         instances[i]->classes[sc++]  = get_attr(node, _STR_ID_);
     }
 
+    //printf("Resources\n"); fflush(stdout);
     /* Obteniendo los Events. */
     n_event               = get_child(n_inst, _STR_EVENTS_);
     instances[i]->s_event = count_childs(n_event, _STR_EVENT_);
@@ -145,15 +147,22 @@ int parser(char *filename)
     for (node = get_child(n_event, _STR_EVENT_), j = 0;
          node;
          node = get_next(node, _STR_EVENT_), j++) {
-      instances[i]->events[j] = 
-            new_event(atoi(xmlNodeGetContent(get_child(node, _STR_DURATION_))));
+      instances[i]->events[j] = new_event (
+          atoi((char *) xmlNodeGetContent(get_child(node, _STR_DURATION_)))
+      );
       for (tmp = get_child(get_child(node, _STR_RESOURCES_), _STR_RESOURCE_);
            tmp;
            tmp = get_next(tmp, _STR_RESOURCE_)) {
-      //TODO verificar el null como primer arg.
-        ref   = get_attr(get_child(tmp, _STR_RTYPE_), _STR_REFERENCE_);
-        value = get_attr(tmp, _STR_REFERENCE_);
-        if (!value) break;
+        if ( !(value = get_attr(tmp, _STR_REFERENCE_)) ) break;
+        if ( !(aux = get_child(tmp, _STR_RTYPE_)) )
+          if ( !(aux = get_child(tmp, _STR_ROLE_)) ) {
+            fprintf(stderr, "IDK the resource type of some event.\n");
+            return NULL;
+          } else
+            ref = (char *) xmlNodeGetContent(aux);
+        else 
+          ref = get_attr(aux, _STR_REFERENCE_);
+
         if (!strcmp(ref, _STR_CLASS_)) {
           for (k = 0; k < instances[i]->s_class; k++)
             if (!strcmp(instances[i]->classes[k], value)) {
@@ -217,7 +226,7 @@ int parser(char *filename)
 
   xmlFreeDoc(document);
   xmlCleanupParser();
-  return 0;
+  return instances;
 }
 
 /* vim: set ts=2 sw=2 sts=2 tw=80 : */
