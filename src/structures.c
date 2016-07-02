@@ -19,26 +19,47 @@ struct event *new_event (short duration)
 {
   struct event *ev = (struct event *) malloc(sizeof(struct event));
   ev->duration = duration;
-  ev->class    = -1;
-  ev->room     = -1;
-  ev->teacher  = -1;
+  ev->class    = NONE;
+  ev->room     = NONE;
+  ev->teacher  = NONE;
   return ev;
 }
 
 struct result *new_result (struct instance *ins)
 {
-  int i;
+  int i, j;
   struct result *r = (struct result *) malloc(sizeof(struct result));
+  r->ev   = (struct r_as **) malloc(ins->s_event * sizeof(struct r_as *));
   r->ins  = ins;
-  r->txt  = (bool **)  malloc(ins->s_teacher * sizeof(bool *) );
-  r->cxt  = (bool **)  malloc(ins->s_class   * sizeof(bool *) );
-  r->rxt  = (bool **)  malloc(ins->s_room    * sizeof(bool *) );
+  r->path = (short *)  malloc(ins->s_event   * sizeof(short));
+  r->txt  = (short **) malloc(ins->s_teacher * sizeof(short *));
+  r->cxt  = (short **) malloc(ins->s_class   * sizeof(short *));
+  r->rxt  = (short **) malloc(ins->s_room    * sizeof(short *));
   r->ph   = (float **) malloc(ins->s_event   * sizeof(float *));
-  r->path = (short *)  malloc(ins->s_event   * sizeof(short)  );
-  for(i=0; i < ins->s_teacher; r->txt[i++] = malloc(ins->s_time*sizeof(bool)));
-  for(i=0; i < ins->s_class;   r->cxt[i++] = malloc(ins->s_time*sizeof(bool)));
-  for(i=0; i < ins->s_room;    r->rxt[i++] = malloc(ins->s_time*sizeof(bool)));
-  for(i=0; i < ins->s_event;   r->ph[i++] = malloc(ins->s_event*sizeof(float)));
+  for(i=0; i < ins->s_event;   r->path[i++] = NONE);
+  for (i=0; i < ins->s_teacher; i++) {
+    r->txt[i] = (short *) malloc(ins->s_time*sizeof(short));
+    for (j = 0; j < ins->s_time; r->txt[i][j++] = NONE);
+  }
+  for (i=0; i < ins->s_class; i++) {
+    r->cxt[i] = (short *) malloc(ins->s_time*sizeof(short));
+    for (j = 0; j < ins->s_time; r->cxt[i][j++] = NONE);
+  }
+  for (i=0; i < ins->s_room; i++) {
+    r->rxt[i] = (short *) malloc(ins->s_time*sizeof(short));
+    for (j = 0; j < ins->s_time; r->rxt[i][j++] = NONE);
+  }
+  for (i=0; i < ins->s_event; i++) {
+    r->ph[i] = (float *) malloc(ins->s_event * sizeof(float));
+    r->ev[i] = malloc(ins->events[i]->duration * sizeof(struct r_as));
+    for (j = 0; j < ins->events[i]->duration; j++) {
+      r->ev[i][j].teacher = ins->events[i]->teacher;
+      r->ev[i][j].class   = ins->events[i]->class;
+      r->ev[i][j].room    = ins->events[i]->room;
+      r->ev[i][j].time    = NONE;
+    }
+    for (j = 0; j < ins->s_event; r->ph[i][j++] = 0.001);
+  }
   return r;
 }
 
@@ -66,12 +87,14 @@ void del_result (struct result *r)
   for(i=0; i < r->ins->s_teacher; free(r->txt[i++]));
   for(i=0; i < r->ins->s_class;   free(r->cxt[i++]));
   for(i=0; i < r->ins->s_room;    free(r->rxt[i++]));
-  for(i=0; i < r->ins->s_event;   free(r->ph[i++]) );
-  free(r->txt ); 
-  free(r->cxt ); 
-  free(r->rxt ); 
-  free(r->ph  ); 
+  for(i=0; i < r->ins->s_event;   free(r->ph[i++]));
+  for(i=0; i < r->ins->s_event;   free(r->ev[i++]));
   free(r->path);
+  free(r->txt); 
+  free(r->cxt); 
+  free(r->rxt); 
+  free(r->ph); 
+  free(r->ev); 
   free(r);
 }
 

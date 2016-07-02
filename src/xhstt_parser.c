@@ -1,6 +1,6 @@
 #include <string.h>
 #include <libxml/parser.h>
-#include "structures.h"
+#include "xhstt_parser.h"
 
 /* http://xmlsoft.org/examples/index.html */
 /* http://www.it.usyd.edu.au/~jeff/cgi-bin/hseval.cgi?op=spec */
@@ -71,14 +71,13 @@ void print_childs(xmlNode *root)
   }
 }
 
-struct instance **parser(char *filename)
+int parser(char *filename, struct instance ***ins)
 {
   xmlDoc  *document = xmlReadFile(filename, NULL, 0);
   xmlNode *root     = xmlDocGetRootElement(document),
           *node, *n_inst, *n_time, *n_res, *n_event, *tmp, *aux;
   short s_ins,  i, j, k,
         sr=0, sc=0, st=0;
-  struct instance **instances;
   char *ref, *value;
 
   node  = get_child(root, _STR_INSTANCES_);
@@ -86,10 +85,10 @@ struct instance **parser(char *filename)
 
   if (!s_ins) {
     fprintf(stderr, "%s has no instances.", filename);
-    return NULL;
+    return -1;
   }
 
-  instances = malloc(s_ins * sizeof(struct instance *));
+  struct instance **instances = malloc(s_ins * sizeof(struct instance *));
 
   for (n_inst = get_child(node, _STR_INSTANCE_), i = 0;
        n_inst;
@@ -119,7 +118,7 @@ struct instance **parser(char *filename)
       else if ( !strcmp(ref, _STR_CLASS_) )       instances[i]->s_class++;
       else {
         fprintf(stderr, "Undefined resource type.\n");
-        return NULL;
+        return -2;
       }
     }
 
@@ -157,7 +156,7 @@ struct instance **parser(char *filename)
         if ( !(aux = get_child(tmp, _STR_RTYPE_)) )
           if ( !(aux = get_child(tmp, _STR_ROLE_)) ) {
             fprintf(stderr, "IDK the resource type of some event.\n");
-            return NULL;
+            return -3;
           } else
             ref = (char *) xmlNodeGetContent(aux);
         else 
@@ -226,7 +225,8 @@ struct instance **parser(char *filename)
 
   xmlFreeDoc(document);
   xmlCleanupParser();
-  return instances;
+  *ins = instances;
+  return s_ins;
 }
 
 /* vim: set ts=2 sw=2 sts=2 tw=80 : */

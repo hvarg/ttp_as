@@ -1,7 +1,8 @@
 #ifndef STRUCTURES_H_
 #define STRUCTURES_H_
 #include <stdlib.h>
-#include <stdbool.h>
+
+#define NONE -1
 
 struct instance{
   /* Equivalentes entre id (int) y su tag (str). */
@@ -19,6 +20,10 @@ struct event{
   short class, teacher, room;
 };
 
+struct r_as{
+  short time, teacher, class, room;
+};
+
 struct result{
   /* Puntero a la instancia resuelta. */
   struct instance *ins;
@@ -26,12 +31,16 @@ struct result{
    *  txt: Teacher X Time
    *  cxt: Class X Time
    *  rxt: Room X Time */
-  bool   **txt, **cxt, **rxt;
+  short   **txt, **cxt, **rxt;
   /* Tabla de feromonas. ph[Evento_inicial][Evento_final]*/
   float  **ph;
   /* Camino de eventos. */
   short  *path;
+  /* Recursos asignados a los eventos. */
+  struct r_as **ev;
 };
+
+/* La asignacion de un evento. */
 
 struct instance   *new_instance   (char *name);
 struct event      *new_event      (short duration);
