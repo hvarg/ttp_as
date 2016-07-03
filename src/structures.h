@@ -20,8 +20,10 @@ struct event{
   short class, teacher, room;
 };
 
+/* Estructura de recursos asignados. */
 struct r_as{
   short time, teacher, class, room;
+  short value;
 };
 
 struct result{
@@ -32,22 +34,37 @@ struct result{
    *  cxt: Class X Time
    *  rxt: Room X Time */
   short   **txt, **cxt, **rxt;
-  /* Tabla de feromonas. ph[Evento_inicial][Evento_final]*/
-  float  **ph;
   /* Camino de eventos. */
   short  *path;
   /* Recursos asignados a los eventos. */
   struct r_as **ev;
+  /* Valor del resultado. */
+  float value;
 };
 
-/* La asignacion de un evento. */
+/* Nodo de un set de tiempos. */
+struct time_node{
+  short id;
+  struct time_node *next;
+};
+
+/* Set de tiempos. */
+struct time_set{
+  short size;
+  struct time_node *first;
+};
+
 
 struct instance   *new_instance   (char *name);
 struct event      *new_event      (short duration);
 struct result     *new_result     (struct instance *ins);
+struct time_set   *new_time_set   (short range);
 void              del_instance    (struct instance *ins);
 void              del_event       (struct event *ev);
 void              del_result      (struct result *r);
+void              del_time_set    (struct time_set *ts);
+void              ts_rm           (struct time_set *ts, short id);
+short             ts_get_and_rm   (struct time_set *ts, short i);
 
 #endif
 /* vim: set ts=2 sw=2 sts=2 tw=80 : */

@@ -35,7 +35,6 @@ struct result *new_result (struct instance *ins)
   r->txt  = (short **) malloc(ins->s_teacher * sizeof(short *));
   r->cxt  = (short **) malloc(ins->s_class   * sizeof(short *));
   r->rxt  = (short **) malloc(ins->s_room    * sizeof(short *));
-  r->ph   = (float **) malloc(ins->s_event   * sizeof(float *));
   for(i=0; i < ins->s_event;   r->path[i++] = NONE);
   for (i=0; i < ins->s_teacher; i++) {
     r->txt[i] = (short *) malloc(ins->s_time*sizeof(short));
@@ -50,7 +49,6 @@ struct result *new_result (struct instance *ins)
     for (j = 0; j < ins->s_time; r->rxt[i][j++] = NONE);
   }
   for (i=0; i < ins->s_event; i++) {
-    r->ph[i] = (float *) malloc(ins->s_event * sizeof(float));
     r->ev[i] = malloc(ins->events[i]->duration * sizeof(struct r_as));
     for (j = 0; j < ins->events[i]->duration; j++) {
       r->ev[i][j].teacher = ins->events[i]->teacher;
@@ -58,9 +56,26 @@ struct result *new_result (struct instance *ins)
       r->ev[i][j].room    = ins->events[i]->room;
       r->ev[i][j].time    = NONE;
     }
-    for (j = 0; j < ins->s_event; r->ph[i][j++] = 0.001);
   }
+  r->value = 0.0;
   return r;
+}
+
+struct time_set *new_time_set (short range)
+{
+  int i;
+  struct time_set  *ts = malloc(sizeof(struct time_set));
+  struct time_node *actual;
+  ts->size  = range;
+  ts->first = malloc(sizeof(struct time_node));
+  for (i = 0, actual = ts->first; i < range; actual = actual->next, i++) {
+    actual->id = i;
+    if (i + 1 < range)
+      actual->next = malloc(sizeof(struct time_node));
+    else
+      actual->next = NULL;
+  }
+  return ts;
 }
 
 void del_instance (struct instance *ins)
@@ -87,15 +102,55 @@ void del_result (struct result *r)
   for(i=0; i < r->ins->s_teacher; free(r->txt[i++]));
   for(i=0; i < r->ins->s_class;   free(r->cxt[i++]));
   for(i=0; i < r->ins->s_room;    free(r->rxt[i++]));
-  for(i=0; i < r->ins->s_event;   free(r->ph[i++]));
   for(i=0; i < r->ins->s_event;   free(r->ev[i++]));
   free(r->path);
   free(r->txt); 
   free(r->cxt); 
   free(r->rxt); 
-  free(r->ph); 
   free(r->ev); 
   free(r);
 }
 
+void del_time_set (struct time_set *ts)
+{
+  struct time_node *actual, *next;
+  for(actual = ts->first; actual; actual = next) {
+    next = actual->next;
+    free( actual );
+  }
+  free(ts);
+}
+
+void ts_rm (struct time_set *ts, short id)
+{
+  struct time_node *actual, *prev;
+  for (actual = ts->first; actual; actual = actual->next) {
+    if (actual->id == id) {
+      if (actual == ts->first) ts->first = actual->next;
+      else prev->next = actual->next;
+      free(actual);
+      ts->size--;
+      return;
+    } else if (actual->id > id) return;
+    prev = actual;
+  }
+}
+
+short ts_get_and_rm(struct time_set *ts, short i)
+{
+  short j, id;
+  struct time_node *actual, *prev;
+  for (j = 0, actual = ts->first; actual; actual = actual->next, j++) {
+    if (j == i) {
+      if (actual == ts->first) ts->first = actual->next;
+      else prev->next = actual->next;
+      id = actual->id;
+      free(actual);
+      ts->size--;
+      return id ;
+    }
+    prev = actual;
+  }
+  return -1;
+}
 /* vim: set ts=2 sw=2 sts=2 tw=80 : */

@@ -2,14 +2,26 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
+#include <math.h>
 #include "xhstt_parser.h"
 #include "structures.h"
 
-#define MY_SEED   82 //time(NULL) // Semilla para random. Puede ser un entero.
+#define MY_SEED   80 //time(NULL) // Semilla para random. Puede ser un entero.
 #define OUT_FILE  "/dev/stdout"
 #define DEF_INS   0
 #define MAX_ITER  1000
 #define MAX_ANTS  20
+#define _PH_MIN   0.01
+#define _PH_INV   100
+#define _EVAP     0.3
+#define _Q        0.05
+#define _ALPHA    2
+#define _BETA     0.5
+
+float PH_MIN,PH_INV, EVAP, Q, ALPHA, BETA;
+
+float  **pheromone;
+short p_size;
 
 /* La siguiente funcion fue obtenida del comentario de Laurence Gonsalves en:
  *http://stackoverflow.com/questions/822323/how-to-generate-a-random-number-in-c
@@ -32,7 +44,7 @@ int randint(int n) {
 void print_res(struct result *R)
 {
   int i, j;
-  printf("TxT           CXT           RXT\n");
+  /*printf("TxT           CXT           RXT\n");
   for (i = 0; i < R->ins->s_time; i++) {
     for (j = 0; j < R->ins->s_teacher; j++) printf("%d ", R->txt[j][i]);
     printf("  ");
@@ -41,14 +53,39 @@ void print_res(struct result *R)
     for (j = 0; j < R->ins->s_room   ; j++) printf("%d ", R->rxt[j][i]);
     printf("\n");
   }
-  /*printf("\nPheromones:\n");
+  printf("\nPheromones:\n");
   for (i = 0; i < R->ins->s_event; i++){
-    for (j = 0; j < R->ins->s_event; j++) printf("%0.3f ", R->ph[j][i]);
+    for (j = 0; j < R->ins->s_event; j++) printf("%0.2f ", pheromone[j][i]);
     printf("\n");
-  }*/
-  printf("\nPath: ");
-  for (j = 0; j < R->ins->s_event - 1; j++) printf("%2d --> ", R->path[j]);
-  printf("%2d\n", R->path[j]);
+  }/**/
+  printf("\nPath:  ");
+  for (j = 0; j < R->ins->s_event - 1; j++)
+    printf("%d (%d,%d,%d,%d) -> ", R->path[j], R->ev[R->path[j]][0].teacher,
+           R->ev[R->path[j]][0].class, R->ev[R->path[j]][0].room,
+           R->ev[R->path[j]][0].time);
+  printf("%d (%d,%d,%d,%d)\n", R->path[j], R->ev[R->path[j]][0].teacher,
+         R->ev[R->path[j]][0].class, R->ev[R->path[j]][0].room,
+         R->ev[R->path[j]][0].time);
+  printf("Value: %f\n", R->value);
+}
+
+void ph_evap()
+{
+  int i, j;
+  float tmp;
+  for (i = 0; i < p_size; i++)
+    for (j = 0; j < p_size; j++) {
+      tmp = pheromone[i][j] * (1 - EVAP);
+      pheromone[i][j] = tmp > PH_MIN ? tmp : PH_MIN;
+    }
+}
+
+void ph_update(short *path)
+{
+   int i, j;
+   for (i = 0, j = 1; j < p_size; i++, j++) {
+     pheromone[path[i]][path[j]] += Q;
+   }
 }
 
 int in_path(short *path, short value)
@@ -64,32 +101,109 @@ short next_event(struct result *R, short actual)
 {
   int total = 0, part = 0, i;
   for (i = 0; i < R->ins->s_event; i++)
-    if (!in_path(R->path, i)) total += (int) (R->ph[actual][i] * 1000);
+    if (!in_path(R->path, i)) 
+      total += (int) pow((pheromone[actual][i]*PH_INV), ALPHA) + 
+ 			               pow((R->ins->events[i]->duration), BETA);
   total = randint(total);
   for (i = 0;; i++) {
-    if (!in_path(R->path, i)) part += (int) (R->ph[actual][i] * 1000);
+    if (!in_path(R->path, i))
+      part += (int) pow((pheromone[actual][i]*PH_INV), ALPHA) +
+									  pow((R->ins->events[i]->duration), BETA);
     if (part > total) return i;
   } 
 }
 
-float ant(struct result *R)
+//  void assign(struct result *R, short id)
+//  {
+//    short d = R->ins->events[id]->duration,
+//          t, i, *p, *c, *r, cp, cc, cr;
+//    for (i = 0; i < d; i++) {
+//      /*printf("Asignando recursos para %d (%d,%d,%d) de (%d,%d,%d).\n", id,
+//             R->ev[id][i].teacher, R->ev[id][i].class, R->ev[id][i].room,
+//             R->ins->s_teacher, R->ins->s_class, R->ins->s_room);*/
+//      for (t = 0; t < R->ins->s_time; t++) {
+//        p = R->ev[id][i].teacher == NONE ? &cp : &(R->ev[id][i].teacher);
+//        c = R->ev[id][i].class   == NONE ? &cc : &(R->ev[id][i].class);
+//        r = R->ev[id][i].room    == NONE ? &cr : &(R->ev[id][i].room);
+//        for (cp = 0; cp < R->ins->s_teacher; cp++) {
+//          for (cc = 0; cc < R->ins->s_class; cc++) {
+//            for (cr = 0; cr < R->ins->s_room; cr++) {
+//              /*printf("t:%d, c:%d, r:%d", *p, *c, *r);
+//              printf("\t%d < %d", *r, R->ins->s_room);
+//              getc(stdin);*/
+//              if ((R->txt[*p][t] == R->cxt[*c][t]) &&
+//                  (R->cxt[*c][t] == R->rxt[*r][t]) &&
+//                  (R->rxt[*r][t] == NONE)) {
+//                R->txt[*p][t] = id; R->ev[id][i].teacher = *p;
+//                R->cxt[*c][t] = id; R->ev[id][i].class   = *c;
+//                R->rxt[*r][t] = id; R->ev[id][i].room    = *r;
+//                R->ev[id][i].time = t;
+//                R->ev[id][i].value = 0;
+//                if (i == d-1) return;
+//              }
+//            }
+//          }
+//        }
+//      }
+//      R->ev[id][i].value = -1;
+//      /*printf("Er ");*/
+//    }
+//  }
+
+/* Se asume que ya estan asignados los recursos teacher, class y room. */
+void assign(struct result *R, short id)
 {
-  float value = 0.0;
-  short actual = randint(R->ins->s_event), next, i = 0;
+  struct time_set *ts = new_time_set(R->ins->s_time);
+  short i, t, d = R->ins->events[id]->duration;
+  for (i = 0; i < R->ins->s_time; i++) {
+    if ( R->txt[R->ins->events[id]->teacher][i] != NONE)    ts_rm(ts, i);
+    else if ( R->cxt[R->ins->events[id]->class][i] != NONE) ts_rm(ts, i);
+    else if ( R->txt[R->ins->events[id]->room][i] != NONE)  ts_rm(ts, i);
+  }
+//  for (n = ts->first; n; n = n->next) printf("%d ", n->id);
+//  printf("\n");
+  if (d <= ts->size)
+    for (i = 0; i < d; i++) {
+//      printf("Asignando recursos para %d (%d,%d,%d) de (%d,%d,%d).\n", id,
+//             R->ev[id][i].teacher, R->ev[id][i].class, R->ev[id][i].room,
+//             R->ins->s_teacher, R->ins->s_class, R->ins->s_room);
+      t = ts_get_and_rm(ts, randint(ts->size));
+      R->txt[R->ins->events[id]->teacher][t] = id;
+      R->cxt[R->ins->events[id]->class][t]   = id;
+      R->rxt[R->ins->events[id]->room][t]    = id;
+      R->ev[id][i].teacher = R->ins->events[id]->teacher;
+      R->ev[id][i].class   = R->ins->events[id]->class;
+      R->ev[id][i].room    = R->ins->events[id]->room;
+      R->ev[id][i].time    = t;
+      R->ev[id][i].value   = 0;
+    }
+  else for(i = 0; i < d; R->ev[id][i++].value = -1);
+  del_time_set(ts);
+}
+
+void ant(struct result *R)
+{
+  short actual = randint(R->ins->s_event), next, 
+        i = 0, j;
   R->path[i] = actual;
+  assign(R, actual);
   while (R->path[R->ins->s_event-1] == NONE) {
     next = next_event(R, actual);
     R->path[++i] = next;
+    assign(R, next);
     actual = next;
   }
-  return value;
+  for (i = 0; i < R->ins->s_event; i++) 
+    for (j = 0; j < R->ins->events[i]->duration; j++)
+      R->value += R->ev[i][j].value;
 }
 
 int main(int argc, const char * args[])
 {
   struct instance **ins = NULL;
-  struct result **results;
-  int s_ant, max_iter, s_ins, i;
+  struct result **results, *best = NULL;
+  int   s_ant, max_iter, s_ins, i, j, best_index = -1;
+  float best_value = -1000.0;
   if (argc < 2) {
     printf("Modo de uso: ./ttp_as archivo.xml [#hormigas] [#iteraciones]\n");
     return EXIT_FAILURE;
@@ -102,16 +216,61 @@ int main(int argc, const char * args[])
     return EXIT_FAILURE;
   }
   srand(MY_SEED);
+
+  FILE *fp = fopen("params", "r");
+  if (fp == NULL) {
+    PH_MIN =  _PH_MIN;    EVAP   =  _EVAP;    ALPHA  =  _ALPHA;
+    PH_INV =  _PH_INV;    Q      =  _Q;       BETA   =  _BETA;
+  } else {
+    fscanf(fp,"%f %f %f %f %f %f", &PH_MIN, &PH_INV, &Q, &EVAP, &ALPHA, &BETA);
+    fclose(fp);
+  }
+
   /* Solo para la instancia DEF_INS. */
-  printf("Instancia: %s, con %d hormigas y %d iteraciones maximas.\n", 
-      ins[DEF_INS]->name, s_ant, max_iter);
-  results = (struct result **) malloc(s_ant * sizeof(struct result *));
-  for(i = 0; i < s_ant; results[i++] = new_result(ins[DEF_INS]));
+  printf("Instancia: %s, %d profesores, %d clases, %d salas, %d tiempos.\n", 
+      ins[DEF_INS]->name, ins[DEF_INS]->s_teacher, ins[DEF_INS]->s_class, 
+      ins[DEF_INS]->s_room, ins[DEF_INS]->s_time);
+  printf("Resolviendo con %d hormigas, %d iteraciones maximas y los siguientes",
+      s_ant, max_iter);
+  printf(" parametros:\nph_min:%g  inv:%g  Q:%g  evap:%g  alpha:%g  beta:%g\n",
+      PH_MIN, PH_INV, Q, EVAP, ALPHA, BETA);
+  results   = (struct result **) malloc(s_ant * sizeof(struct result *));
+  p_size    = ins[DEF_INS]->s_event;
+  pheromone = (float **) malloc(p_size * sizeof(float *));
+  for (i=0; i < p_size; i++) {
+    pheromone[i] = (float *) malloc(p_size * sizeof(float));
+    for (j = 0; j < p_size; pheromone[i][j++] = PH_MIN);
+  }
 
-  ant(results[0]);
-  print_res(results[0]);
+  for (i = 0; i < max_iter; i++) {
+    for (j = 0; j < s_ant; j++) {
+      results[j] = new_result(ins[DEF_INS]);
+      ant(results[j]);
+    }
+    for (j = 1; j < s_ant; j++) {
+      if (results[j]->value > best_value){
+        best_index = j;
+        best_value = results[j]->value;
+      }
+    }
+    printf("iter:%d = %0.4f (%0.4f)\r", i, best_value, best?best->value:-1000);
+    ph_evap();
+    for (j = 0; j < s_ant; j++) {
+      if (results[j]->value == best_value) ph_update(results[j]->path);
+      if (j != best_index) del_result(results[j]);
+    }
+    if (best_value > (best?best->value:-1000)) {
+      best = results[best_index];
+      results[best_index] = NULL;
+    }
+    ph_update(best->path);
+    best_index = -1;
+    best_value = -1000.0;
+  }
 
-  for(i = 0; i < s_ant; del_result(results[i++]));
+  print_res(best);
+
+  del_result(best);/**/
   for(i = 0; i < s_ins; del_instance(ins[i++]));
 
   return EXIT_SUCCESS;
