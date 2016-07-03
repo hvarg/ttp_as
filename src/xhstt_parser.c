@@ -184,6 +184,7 @@ int parser(char *filename, struct instance ***ins)
     }
   }
   
+  /* Prints... 
   printf("The file has %d instances.\n", s_ins);
   for (i = 0; i < s_ins; i++) {
     printf(" Instance[%d] = %s\n",i, instances[i]->name);
@@ -221,7 +222,7 @@ int parser(char *filename, struct instance ***ins)
           instances[i]->events[j]->room == -1 ? "NULL" : 
             instances[i]->rooms[instances[i]->events[j]->room]);
     }
-  }
+  } /**/
 
   xmlFreeDoc(document);
   xmlCleanupParser();
