@@ -1,0 +1,9 @@
+0.001 1000 0.005 0.2 2 1
+Solo se lee la primera linea de este archivo. Los parámetros van como siguen:
+feromona_mínima inversa Q evaporación alpha beta
+con:
+    feromona_mínima * inversa >= 1 (Para el calculo de probabilidades.)
+    0 < evaporación < 1
+    Q: aporte de feromona en caminos parte de la mejor solución.
+    Regla de transición:
+        feromona ^ alpha + duración_del_evento ^ beta (%). 
