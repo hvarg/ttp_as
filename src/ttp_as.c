@@ -113,67 +113,33 @@ short next_event(struct result *R, short actual)
   } 
 }
 
-//  void assign(struct result *R, short id)
-//  {
-//    short d = R->ins->events[id]->duration,
-//          t, i, *p, *c, *r, cp, cc, cr;
-//    for (i = 0; i < d; i++) {
-//      /*printf("Asignando recursos para %d (%d,%d,%d) de (%d,%d,%d).\n", id,
-//             R->ev[id][i].teacher, R->ev[id][i].class, R->ev[id][i].room,
-//             R->ins->s_teacher, R->ins->s_class, R->ins->s_room);*/
-//      for (t = 0; t < R->ins->s_time; t++) {
-//        p = R->ev[id][i].teacher == NONE ? &cp : &(R->ev[id][i].teacher);
-//        c = R->ev[id][i].class   == NONE ? &cc : &(R->ev[id][i].class);
-//        r = R->ev[id][i].room    == NONE ? &cr : &(R->ev[id][i].room);
-//        for (cp = 0; cp < R->ins->s_teacher; cp++) {
-//          for (cc = 0; cc < R->ins->s_class; cc++) {
-//            for (cr = 0; cr < R->ins->s_room; cr++) {
-//              /*printf("t:%d, c:%d, r:%d", *p, *c, *r);
-//              printf("\t%d < %d", *r, R->ins->s_room);
-//              getc(stdin);*/
-//              if ((R->txt[*p][t] == R->cxt[*c][t]) &&
-//                  (R->cxt[*c][t] == R->rxt[*r][t]) &&
-//                  (R->rxt[*r][t] == NONE)) {
-//                R->txt[*p][t] = id; R->ev[id][i].teacher = *p;
-//                R->cxt[*c][t] = id; R->ev[id][i].class   = *c;
-//                R->rxt[*r][t] = id; R->ev[id][i].room    = *r;
-//                R->ev[id][i].time = t;
-//                R->ev[id][i].value = 0;
-//                if (i == d-1) return;
-//              }
-//            }
-//          }
-//        }
-//      }
-//      R->ev[id][i].value = -1;
-//      /*printf("Er ");*/
-//    }
-//  }
-
-/* Se asume que ya estan asignados los recursos teacher, class y room. */
 void assign(struct result *R, short id)
 {
   struct time_set *ts = new_time_set(R->ins->s_time);
-  short i, t, d = R->ins->events[id]->duration;
+  short i, j, t, r, d = R->ins->events[id]->duration;
   for (i = 0; i < R->ins->s_time; i++) {
     if ( R->txt[R->ins->events[id]->teacher][i] != NONE)    ts_rm(ts, i);
     else if ( R->cxt[R->ins->events[id]->class][i] != NONE) ts_rm(ts, i);
-    else if ( R->txt[R->ins->events[id]->room][i] != NONE)  ts_rm(ts, i);
+    else if (R->ins->s_room != 0) {
+      if ( R->ins->events[id]->room == -1 ) {
+        for (j = 0; j < R->ins->s_room; j++)
+          if (R->rxt[j][i] == NONE) break;
+        if (j == R->ins->s_room) ts_rm(ts, i);
+      } else if (R->rxt[R->ins->events[id]->room][i] != NONE)  ts_rm(ts, i);
+    }
   }
-//  for (n = ts->first; n; n = n->next) printf("%d ", n->id);
-//  printf("\n");
   if (d <= ts->size)
     for (i = 0; i < d; i++) {
-//      printf("Asignando recursos para %d (%d,%d,%d) de (%d,%d,%d).\n", id,
-//             R->ev[id][i].teacher, R->ev[id][i].class, R->ev[id][i].room,
-//             R->ins->s_teacher, R->ins->s_class, R->ins->s_room);
       t = ts_get_and_rm(ts, randint(ts->size));
+      if ( R->ins->events[id]->room == -1 && R->ins->s_room != 0)
+        while (R->rxt[(r = randint(R->ins->s_room))][t] != NONE);
+      else r = R->ins->events[id]->room;
       R->txt[R->ins->events[id]->teacher][t] = id;
       R->cxt[R->ins->events[id]->class][t]   = id;
-      R->rxt[R->ins->events[id]->room][t]    = id;
+      if (R->ins->s_room != 0) R->rxt[r][t]  = id;
       R->ev[id][i].teacher = R->ins->events[id]->teacher;
       R->ev[id][i].class   = R->ins->events[id]->class;
-      R->ev[id][i].room    = R->ins->events[id]->room;
+      R->ev[id][i].room    = r;
       R->ev[id][i].time    = t;
       R->ev[id][i].value   = 0;
     }
@@ -253,7 +219,8 @@ int main(int argc, const char * args[])
         best_value = results[j]->value;
       }
     }
-    printf("iter:%d = %0.4f (%0.4f)\r", i, best_value, best?best->value:-1000);
+    printf("iter:%d = %0.4f (%0.4f)      \r",
+        i,  best_value,best ? best->value : -1000);
     ph_evap();
     for (j = 0; j < s_ant; j++) {
       if (results[j]->value == best_value) ph_update(results[j]->path);
