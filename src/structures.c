@@ -1,5 +1,6 @@
 #include "structures.h"
 
+/* Nueva instancia con nombre 'name'. */
 struct instance *new_instance (char *name)
 {
   struct instance *ins = (struct instance *) malloc(sizeof(struct instance));
@@ -15,6 +16,7 @@ struct instance *new_instance (char *name)
   return ins;
 }
 
+/* Nuevo evento con cierta duracion. */
 struct event *new_event (short duration)
 {
   struct event *ev = (struct event *) malloc(sizeof(struct event));
@@ -25,6 +27,7 @@ struct event *new_event (short duration)
   return ev;
 }
 
+/* Nuevo resultado de cierta instancia 'ins'. */
 struct result *new_result (struct instance *ins)
 {
   int i, j;
@@ -61,6 +64,7 @@ struct result *new_result (struct instance *ins)
   return r;
 }
 
+/* Nuevo set de tiempos de [0,range). */
 struct time_set *new_time_set (short range)
 {
   int i;
@@ -121,6 +125,7 @@ void del_time_set (struct time_set *ts)
   free(ts);
 }
 
+/* Elimina el elemento 'id' del time_set 'ts'. */
 void ts_rm (struct time_set *ts, short id)
 {
   struct time_node *actual, *prev;
@@ -136,6 +141,7 @@ void ts_rm (struct time_set *ts, short id)
   }
 }
 
+/* Retorna y elemento en la posicion i del time_set 'ts'. */
 short ts_get_and_rm(struct time_set *ts, short i)
 {
   short j, id;

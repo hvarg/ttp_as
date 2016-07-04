@@ -2,6 +2,7 @@
 #include <libxml/parser.h>
 #include "xhstt_parser.h"
 
+/* Referencias: */
 /* http://xmlsoft.org/examples/index.html */
 /* http://www.it.usyd.edu.au/~jeff/cgi-bin/hseval.cgi?op=spec */
 
@@ -24,6 +25,7 @@ static char _STR_INSTANCES_[] = "Instances",
             _STR_ROLE_[]      = "Role",
             _STR_REFERENCE_[] = "Reference";
 
+/* Obtiene el nodo vecino con name == string. */
 xmlNode *get_next(xmlNode *actual, char *string)
 {
   xmlNode *node;
@@ -34,6 +36,7 @@ xmlNode *get_next(xmlNode *actual, char *string)
   return NULL;
 }
 
+/* Obtiene el nodo hijo con name == string. */
 xmlNode *get_child(xmlNode *root, char *string)
 {
   if ( !strcmp((char *) root->children->name, string) )
@@ -41,6 +44,7 @@ xmlNode *get_child(xmlNode *root, char *string)
   return get_next(root->children, string);
 }
 
+/* Cuenta los hijos con name == string. */
 unsigned int count_childs(xmlNode *root, char *string)
 {
   xmlNode *node;
@@ -52,7 +56,8 @@ unsigned int count_childs(xmlNode *root, char *string)
   return count;
 }
 
-char * get_attr(xmlNode *node, char *string)
+/* Retorna el atributo 'string' del nodo. */
+char *get_attr(xmlNode *node, char *string)
 {
   xmlAttr *attr;
   for (attr = node->properties; attr; attr = attr->next) {
@@ -62,15 +67,7 @@ char * get_attr(xmlNode *node, char *string)
   return NULL;
 }
 
-void print_childs(xmlNode *root)
-{
-  xmlNode *node;
-  for (node = root->children; node; node = node->next) {
-    if (!xmlIsBlankNode(node))
-      printf("\t<%s> (%i): [%s]\n", node->name, node->type, xmlNodeGetContent(node));
-  }
-}
-
+/* Lee un archivo XML y retorna un arreglo de instancias con sus datos. */
 int parser(char *filename, struct instance ***ins)
 {
   xmlDoc  *document = xmlReadFile(filename, NULL, 0);
@@ -82,20 +79,16 @@ int parser(char *filename, struct instance ***ins)
 
   node  = get_child(root, _STR_INSTANCES_);
   s_ins = count_childs(node, _STR_INSTANCE_);
-
   if (!s_ins) {
     fprintf(stderr, "%s has no instances.", filename);
     return -1;
   }
-
   struct instance **instances = malloc(s_ins * sizeof(struct instance *));
 
   for (n_inst = get_child(node, _STR_INSTANCE_), i = 0;
        n_inst;
        n_inst = get_next(n_inst, _STR_INSTANCE_), i++) {
     instances[i] = new_instance(get_attr(n_inst, _STR_ID_));
-    //printf("%s\n", instances[i]->name); fflush(stdout);
-
     /* Obteniendo los Times. */
     n_time               = get_child(n_inst, _STR_TIMES_);
     instances[i]->s_time = count_childs(n_time, _STR_TIME_);
@@ -105,8 +98,6 @@ int parser(char *filename, struct instance ***ins)
          node = get_next(node, _STR_TIME_), j++) {
       instances[i]->times[j] = get_attr(node, _STR_ID_);
     }
-
-    //printf("Times\n"); fflush(stdout);
     /* Obteniendo los Resources. */
     n_res = get_child(n_inst, _STR_RESOURCES_);
     for (node = get_child(n_res, _STR_RESOURCE_);
@@ -121,7 +112,6 @@ int parser(char *filename, struct instance ***ins)
         return -2;
       }
     }
-
     instances[i]->teachers = malloc(instances[i]->s_teacher * sizeof(char *));
     instances[i]->classes  = malloc(instances[i]->s_class   * sizeof(char *));
     instances[i]->rooms    = malloc(instances[i]->s_room    * sizeof(char *));
@@ -137,8 +127,6 @@ int parser(char *filename, struct instance ***ins)
       else if ( !strcmp(ref, _STR_CLASS_) )
         instances[i]->classes[sc++]  = get_attr(node, _STR_ID_);
     }
-
-    //printf("Resources\n"); fflush(stdout);
     /* Obteniendo los Events. */
     n_event               = get_child(n_inst, _STR_EVENTS_);
     instances[i]->s_event = count_childs(n_event, _STR_EVENT_);
@@ -161,7 +149,6 @@ int parser(char *filename, struct instance ***ins)
             ref = (char *) xmlNodeGetContent(aux);
         else 
           ref = get_attr(aux, _STR_REFERENCE_);
-
         if (!strcmp(ref, _STR_CLASS_)) {
           for (k = 0; k < instances[i]->s_class; k++)
             if (!strcmp(instances[i]->classes[k], value)) {
@@ -183,8 +170,8 @@ int parser(char *filename, struct instance ***ins)
       }
     }
   }
-  
-  /* Prints... 
+
+#ifdef VERBOSE
   printf("The file has %d instances.\n", s_ins);
   for (i = 0; i < s_ins; i++) {
     printf(" Instance[%d] = %s\n",i, instances[i]->name);
@@ -222,7 +209,8 @@ int parser(char *filename, struct instance ***ins)
           instances[i]->events[j]->room == -1 ? "NULL" : 
             instances[i]->rooms[instances[i]->events[j]->room]);
     }
-  } /**/
+  }
+#endif
 
   xmlFreeDoc(document);
   xmlCleanupParser();

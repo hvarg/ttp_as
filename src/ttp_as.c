@@ -6,22 +6,21 @@
 #include "xhstt_parser.h"
 #include "structures.h"
 
-#define MY_SEED   80 //time(NULL) // Semilla para random. Puede ser un entero.
-#define OUT_FILE  "/dev/stdout"
-#define DEF_INS   0
-#define MAX_ITER  1000
-#define MAX_ANTS  20
-#define _PH_MIN   0.01
-#define _PH_INV   100
-#define _EVAP     0.3
-#define _Q        0.05
-#define _ALPHA    2
-#define _BETA     0.5
+#define MY_SEED   time(NULL) //82 // Semilla para random. Puede ser un entero.
+#define DEF_INS   0               // Indice de instancia con la que trabajar.
+#define MAX_ITER  1000            // Maximo de iteraciones por defecto.
+#define MAX_ANTS  20              // Hormigas por defecto.
+#define _PH_MIN   0.01            // Feromona minima por defecto.
+#define _PH_INV   100             // Inversa por defecto.
+#define _EVAP     0.3             // Evaporacion por defecto.
+#define _Q        0.05            // Q por defecto.
+#define _ALPHA    2               // Alpha por defecto.
+#define _BETA     0.5             // Beta por defecto.
 
-float PH_MIN,PH_INV, EVAP, Q, ALPHA, BETA;
 
-float  **pheromone;
-short p_size;
+float PH_MIN,PH_INV, EVAP, Q, ALPHA, BETA;  // Parametros.
+float  **pheromone;                         // Feromonas.
+short p_size;                               // Tamaño del arreglo de feromonas.
 
 /* La siguiente funcion fue obtenida del comentario de Laurence Gonsalves en:
  *http://stackoverflow.com/questions/822323/how-to-generate-a-random-number-in-c
@@ -41,10 +40,13 @@ int randint(int n) {
     }
 }
 
+/* Imprime el resultado por salida estandar. */
 void print_res(struct result *R)
 {
-  int i, j;
-  /*printf("TxT           CXT           RXT\n");
+  int j;
+#ifdef VERBOSE
+  int i;
+  printf("\nTxT\t\tCXT\t\tRXT\n");
   for (i = 0; i < R->ins->s_time; i++) {
     for (j = 0; j < R->ins->s_teacher; j++) printf("%d ", R->txt[j][i]);
     printf("  ");
@@ -55,9 +57,10 @@ void print_res(struct result *R)
   }
   printf("\nPheromones:\n");
   for (i = 0; i < R->ins->s_event; i++){
-    for (j = 0; j < R->ins->s_event; j++) printf("%0.2f ", pheromone[j][i]);
+    for (j = 0; j < R->ins->s_event; j++) printf("%0.3f ", pheromone[j][i]);
     printf("\n");
-  }/**/
+  }
+#endif
   printf("\nPath:  ");
   for (j = 0; j < R->ins->s_event - 1; j++)
     printf("%d (%d,%d,%d,%d) -> ", R->path[j], R->ev[R->path[j]][0].teacher,
@@ -69,6 +72,7 @@ void print_res(struct result *R)
   printf("Value: %f\n", R->value);
 }
 
+/* Evaporacion de la */
 void ph_evap()
 {
   int i, j;
@@ -80,6 +84,7 @@ void ph_evap()
     }
 }
 
+/* Agrega feromona al camino indicado. */
 void ph_update(short *path)
 {
    int i, j;
@@ -88,6 +93,7 @@ void ph_update(short *path)
    }
 }
 
+/* Verifica si cierto evento ya fue realizado. */
 int in_path(short *path, short value)
 {
   short i;
@@ -97,6 +103,7 @@ int in_path(short *path, short value)
   }
 }
 
+/* Determina el siguiente evento con cierta probabilidad. */
 short next_event(struct result *R, short actual)
 {
   int total = 0, part = 0, i;
@@ -113,6 +120,8 @@ short next_event(struct result *R, short actual)
   } 
 }
 
+/* Asigna recursos a cierto evento, si lo logra le da valor 0, si no hay
+ * recursos disponibles le asigna -1. */
 void assign(struct result *R, short id)
 {
   struct time_set *ts = new_time_set(R->ins->s_time);
@@ -147,6 +156,7 @@ void assign(struct result *R, short id)
   del_time_set(ts);
 }
 
+/* El camino que sigue 1 hormiga. */
 void ant(struct result *R)
 {
   short actual = randint(R->ins->s_event), next, 
@@ -166,14 +176,17 @@ void ant(struct result *R)
 
 int main(int argc, const char * args[])
 {
+  /* Inicializacion. */
   struct instance **ins = NULL;
   struct result **results, *best = NULL;
   int   s_ant, max_iter, s_ins, i, j, best_index = -1;
   float best_value = -1000.0;
   if (argc < 2) {
     printf("Modo de uso: ./ttp_as archivo.xml [#hormigas] [#iteraciones]\n");
+    printf("#hormigas > 1, otros parametros en el archivo 'params.' \n");
     return EXIT_FAILURE;
   }
+
   s_ant    = argc > 2 ? atoi(args[2]) : MAX_ANTS;
   max_iter = argc > 3 ? atoi(args[3]) : MAX_ITER;
   s_ins = parser((char *) args[1], &ins);
@@ -192,7 +205,7 @@ int main(int argc, const char * args[])
     fclose(fp);
   }
 
-  /* Solo para la instancia DEF_INS. */
+  /* Solo se calcula para la instancia DEF_INS. */
   printf("Instancia: %s, %d profesores, %d clases, %d salas, %d tiempos.\n", 
       ins[DEF_INS]->name, ins[DEF_INS]->s_teacher, ins[DEF_INS]->s_class, 
       ins[DEF_INS]->s_room, ins[DEF_INS]->s_time);
@@ -208,6 +221,7 @@ int main(int argc, const char * args[])
     for (j = 0; j < p_size; pheromone[i][j++] = PH_MIN);
   }
 
+  /* Hormigas. */
   for (i = 0; i < max_iter; i++) {
     for (j = 0; j < s_ant; j++) {
       results[j] = new_result(ins[DEF_INS]);
@@ -237,7 +251,8 @@ int main(int argc, const char * args[])
 
   print_res(best);
 
-  del_result(best);/**/
+  /* Liberando memoria. */
+  del_result(best);
   for(i = 0; i < s_ins; del_instance(ins[i++]));
 
   return EXIT_SUCCESS;

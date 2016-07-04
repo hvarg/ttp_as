@@ -2,10 +2,11 @@
 #define STRUCTURES_H_
 #include <stdlib.h>
 
+/* Entero que se entendera como NONE, no puede ser >= 0. */
 #define NONE -1
 
 struct instance{
-  /* Equivalentes entre id (int) y su tag (str). */
+  /* Equivalencias entre id (int) y su tag (str). */
   char  *name, **times, **teachers, **rooms, **classes;
   /* Numero de recursos. */
   short s_time, s_teacher, s_room, s_class, s_event;
@@ -14,15 +15,16 @@ struct instance{
 };
 
 struct event{
-  /* Duracion del evento.  */
+  /* Duracion del evento. */
   short duration;
-  /* Id de los recursos requeridos (-1 cualquiera).*/
+  /* Id de los recursos requeridos (NONE: cualquiera). */
   short class, teacher, room;
 };
 
 /* Estructura de recursos asignados. */
 struct r_as{
   short time, teacher, class, room;
+  /* Valor de esta asignacion. */
   short value;
 };
 
@@ -38,7 +40,7 @@ struct result{
   short  *path;
   /* Recursos asignados a los eventos. */
   struct r_as **ev;
-  /* Valor del resultado. */
+  /* Valor total del resultado. */
   float value;
 };
 
