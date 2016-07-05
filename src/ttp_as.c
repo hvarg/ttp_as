@@ -43,9 +43,8 @@ int randint(int n) {
 /* Imprime el resultado por salida estandar. */
 void print_res(struct result *R)
 {
-  int j;
+  int j, i;
 #ifdef VERBOSE
-  int i;
   printf("\nTxT\t\tCXT\t\tRXT\n");
   for (i = 0; i < R->ins->s_time; i++) {
     for (j = 0; j < R->ins->s_teacher; j++) printf("%d ", R->txt[j][i]);
@@ -63,13 +62,22 @@ void print_res(struct result *R)
 #endif
   printf("\nPath:  ");
   for (j = 0; j < R->ins->s_event - 1; j++)
-    printf("%d (%d,%d,%d,%d) -> ", R->path[j], R->ev[R->path[j]][0].teacher,
-           R->ev[R->path[j]][0].class, R->ev[R->path[j]][0].room,
-           R->ev[R->path[j]][0].time);
-  printf("%d (%d,%d,%d,%d)\n", R->path[j], R->ev[R->path[j]][0].teacher,
-         R->ev[R->path[j]][0].class, R->ev[R->path[j]][0].room,
-         R->ev[R->path[j]][0].time);
+    printf("%d -> ", R->path[j]);
+  printf("%d", R->path[j]);
+
   printf("Value: %f\n", R->value);
+  for (j = 0; j < R->ins->s_event; j++) {
+    printf("Event[%d], duration: %d\n", j, R->ins->events[j]->duration);
+    for (i = 0; i < R->ins->events[j]->duration; i++) {
+      printf("\t%d: Teacher: %s, Class: %s, Room: %s, Time: %s\n", i,
+          R->ins->teachers[R->ev[j][i].teacher],
+          R->ins->classes[R->ev[j][i].class],
+          R->ev[j][i].room == -1?
+             "None" : R->ins->rooms[R->ev[j][i].room],
+          R->ev[j][i].time == -1?
+             "None" : R->ins->times[R->ev[j][i].time]);
+    }
+  }
 }
 
 /* Evaporacion de la */
