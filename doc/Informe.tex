@@ -3,85 +3,560 @@
 \usepackage[spanish]{babel}
 \usepackage{amsfonts}
 \usepackage{amsmath}
-\usepackage[dvips]{graphicx}
 \usepackage{url}
 \usepackage[top=3cm,bottom=3cm,left=3.5cm,right=3.5cm,footskip=1.5cm,headheight=1.5cm,headsep=.5cm,textheight=3cm]{geometry}
-%\usepackage[]{algorithm2e}
+\usepackage{algorithm}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage[noend]{algpseudocode}
+\usepackage{tikz}
+\usetikzlibrary{babel,arrows.meta,shapes,arrows}
+\lstset{basicstyle=\ttfamily\small, numbers = left}
+
+\renewcommand{\tt}[1]{\texttt{#1}}
+\renewcommand{\it}[1]{\textit{#1}}
+\renewcommand{\bf}[1]{\textbf{#1}}
+\newcommand{\ra}{$\rightarrow\,\,$}
+\newcommand{\la}{$\leftarrow\,\,$}
+
+\floatname{algorithm}{Algoritmo}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
 
 \begin{document}
 \title{
-    Inteligencia Artificial Avanzada\\ 
-    \begin{Large}
-      Ant System - Timetabling Problem
-    \end{Large}
+  Inteligencia Artificial Avanzada\\ 
+  \begin{Large}
+    Ant System - Course Timetabling Problem
+  \end{Large}
 }
 \author{Hernán Vargas \\ 201073009-3}
 \date{\today}
 \maketitle
 
 \begin{abstract}
-    %Resumen del informe en no más de 10 líneas.
+  %Resumen del informe en no más de 10 líneas.
 \end{abstract}
 
 \section{Introducción}\label{sec:intro}
-    %Una explicación breve del contenido del informe. Es decir, detalla:
-    %Propósito, Estructura del Documento, Descripción (muy breve) del Problema y
-    %Motivación.
+%Una explicación breve del contenido del informe. Es decir, detalla:
+%Propósito, Estructura del Documento, Descripción (muy breve) del Problema y
+%Motivación.
+En este informe se planteará e implementará un algoritmo de hormigas para la 
+resolución de problemas básicos del \emph{Course Timetabling Problem} (CTP).
+El problema radica en encontrar una asignación de recursos factibles para
+generar un horario de clases de una escuela o universidad. Debido a su
+generalidad pueden existir diversas condiciones y recursos a satisfacer
+dependiendo de la instancia a resolver (por ejemplo, clases en laboratorios
+específicos, número de estudiantes por sala, etc.) y además se pueden generar
+un set de restricciones segundarías para discriminar el ``valor'' de una
+solución (por ejemplo, penalizaciones por tener clases la última hora de un día,
+tener ``ventanas'' de más de 2 horas, etc).
+
+El propósito de esta investigación radica en verificar el funcionamiento y
+rendimiento de algoritmos basados en hormigas para problemas reales y cuales son
+las ventajas y desventajas de elegir esta metaheurística por sobre otras 
+similares.
+
+Este documento se organiza como sigue. En la sección~\ref{sec:def} se define el
+problema junto al conjunto típico de variables y restricciones que lo conforman
+además del vocabulario básico necesario para entender correctamente este
+informe. 
+En la sección~\ref{sec:art} se hace un seguimiento bibliográfico del problema
+con especial énfasis en los trabajos previos de resolución por algoritmos de
+optimización de hormigas y sus resultados.
+La sección~\ref{sec:mod} presenta el modelo utilizado para la creación del
+algoritmo y como se relacionan los parámetros definidos en éste al
+funcionamiento y rendimiento del programa generado.
+En la sección~\ref{sec:repr} se muestra la forma en la cual se representan
+los datos computacionalmente mientras que en la sección~\ref{sec:alg} se
+describe el algoritmo en sí.
+Los resultados son presentados en la sección~\ref{sec:res} y las conclusiones
+obtenidas de ellos se enuncian en la sección~\ref{sec:conc}.
 
 \section{Definición del Problema}\label{sec:def}
-    %Explicación del problema que se va a estudiar, en que consiste, cuales son
-    %sus variables, restricciones y objetivos de manera general. Variantes más
-    %conocidas que existen.
-    
-\section{Estado del Arte}\label{sec:art}
-    %Lo más importante que se ha hecho hasta ahora con relación al problema.
-    %Debería responder preguntas como las siguientes ?`cuando surge?, ?`qué
-    %métodos se han usado para resolverlo?, ?`cuales son los mejores algoritmos
-    %que se han creado hasta la fecha?, ?`qué representaciones han tenido los
-    %mejores resultados?, ?`cuál es la tendencia actual?, tipos de movimientos,
-    %heurísticas, métodos completos, tendencias, etc... Puede incluir gráficos
-    %comparativos, o explicativos.\\ La información que describen en este punto
-    %se basa en los estudios realizados con antelación respecto al tema. Dichos
-    %estudios se citan de manera que quien lea su estudio pueda también acceder
-    %a las referencias que usted revisó. Las citas se realizan mediante el
-    %comando \verb+\cite{ }+.  Por ejemplo, para hacer referencia al artículo de
-    %algoritmos híbridos para problemas de satisfacción de restricciones
-    %~\cite{Prosser93Hybrid}.
+%Explicación del problema que se va a estudiar, en que consiste, cuales son
+%sus variables, restricciones y objetivos de manera general. Variantes más
+%conocidas que existen.
+El CTP es un \emph{scheduling problem}, es decir un problema de asignación de
+recursos.
+En particular en los \emph{timetabling problems} el recurso principal a asignar
+es el tiempo. 
+Existen variados tipos de \emph{timetabling problems}, por ejemplo el
+\emph{train timetabling problem}\cite{caprara2002modeling,khan2010stochastic}
+(asignar tiempos y vías para los trenes), el \emph{employee timetabling
+problem}\cite{detienne2009cut,cowling2000hyperheuristic} (Asignar personal para 
+ciertas tareas), el \emph{examination timetabling problem}\cite{di2000tabu}
+(Asignar el tiempo en que se harán exámenes), entre otros.
+En particular en CTP se busca asignar cierta cantidad de clases en un tiempo
+acotado y utilizando los recursos necesarios para ello.
 
-\section{Modelo Matemático}\label{sec:mod}
-    %Uno o más modelos matemáticos para el problema.
+Variantes del CTP son tanto  el \emph{University Curse Timetabling  Problem}
+como \emph{School Curse Timetabling Problem}. Ambos son básicamente el
+mismo problema de asignación, pero se diferencian en las restricciones para
+determinar la factibilidad de una solución, pues, en general, para las escuelas
+se debe mantener a los estudiantes en clases por grandes periodos consecutivos
+mientras que las universidades pueden ser más flexibles con sus horarios.
+
+El CTP es un problema que se presenta típicamente en universidades y escuelas
+de todo el mundo. Básicamente considera la existencia de cierto número de
+eventos (clases) a realizar en un horario determinado de manera que todos sus
+recursos estén disponibles en ese momento.
+Una solución se considera factible si se logra que cada recurso este asignado
+a un y solo un evento a la vez. La asignación de recursos en sí es un
+subproblema que puede tener variadas restricciones adicionales, por lo que
+generalmente el CTP se considera un problema NP-Hard.
+
+Los recursos y restricciones a resolver en este trabajo son una versión
+simplificada de aquellos presentados en \emph{The third international
+timetabling competition}\cite{post2016third}. Particularmente se utilizarán
+los siguientes recursos:
+\begin{itemize}
+  \item \bf{Tiempo:}
+    Recurso principal a asignar. Todo otro recurso solo puede ocurrir en un
+    tiempo a la vez.
+  \item \bf{Profesor:}
+    Cada evento tiene un profesor asignado.
+  \item \bf{Clase:}
+    Cada evento tiene una clase asignada.
+  \item \bf{Sala:}
+    Los eventos pueden tener una sala asignada o utilizar alguna disponible. En
+    algunas instancias este recurso no existe.
+\end{itemize}
+
+Un \bf{evento} es un set de los recursos mencionados anteriormente de
+forma que tanto el profesor, como la sala y la clase tengan libre el tiempo
+asignado.
+
+La restricción a evaluar será la de factibilidad, es decir que todo evento logre
+una asignación correcta.
+
+Para mantener la simplicidad del algoritmo en este trabajo se excluyen de la
+evaluación instancias con otros recursos como los estudiantes (cada clase puede
+tener cierto número de ellos) y restricciones opcionales para determinar la
+mejor de las soluciones factibles (por ejemplo, tener clases seguidas, de
+preferencia no utilizar ciertos horarios, etc).
+
+\section{Estado del Arte}\label{sec:art}
+%Lo más importante que se ha hecho hasta ahora con relación al problema.
+%Debería responder preguntas como las siguientes ?`cuando surge?, ?`qué
+%métodos se han usado para resolverlo?, ?`cuales son los mejores algoritmos
+%que se han creado hasta la fecha?, ?`qué representaciones han tenido los
+%mejores resultados?, ?`cuál es la tendencia actual?, tipos de movimientos,
+%heurísticas, métodos completos, tendencias, etc... Puede incluir gráficos
+%comparativos, o explicativos.\\ La información que describen en este punto
+%se basa en los estudios realizados con antelación respecto al tema. Dichos
+%estudios se citan de manera que quien lea su estudio pueda también acceder
+%a las referencias que usted revisó. Las citas se realizan mediante el
+%comando \verb+\cite{ }+.  Por ejemplo, para hacer referencia al artículo de
+%algoritmos híbridos para problemas de satisfacción de restricciones
+%~\cite{Prosser93Hybrid}.
+
+El CTP es un problema clásico de asignación de recursos y debido a su
+generalidad han existido diferentes métodos de encarar este problema.
+Al ser un problema combinatorio complejo (NP-Hard) no existen algoritmos
+completos que encuentren soluciones factibles en poco tiempo y por ello ha
+florecido una amplia gama de técnicas incompletas de búsqueda de soluciones.
+
+Entre las metaheurísticas comúnmente utilizadas para encarar el problema se
+destacan los \emph{Evolutionary Algorithms} (EA), \emph{Iterated local search}
+(ILS), \emph{Simulted Annealing} (SA), \emph{Tabu Search} y \emph{Ant colony
+Optimization} (ACO).
+
+\section{Modelo}\label{sec:mod}
+%Uno o más modelos matemáticos para el problema.
+Digamos $E$ el conjunto de eventos a distribuir y $T$ el conjunto de espacios de
+tiempo disponibles. Cada evento es una n-tupla de recursos, en este caso $E = P
+\times C \times S$ con $p_{it} \in P$ una variable binaria que representa la
+asignación del profesor $i$ en el tiempo $t \in T$, análogamente para las clases
+en $c_{it} \in C$ y para las salas en $s_{it} \in S$.
+
+Una solución será un conjunto de eventos $E$ de manera que se cumplan las
+siguientes restricciones:
+\begin{itemize}
+  \item
+    Cada recurso solo puede usarse una vez por tiempo, como los recursos son
+    variables binarias si uno de ellos ya esta asignado no se puede usar
+    nuevamente.
+    $$ (p_{it}=1, p_{it}\in e_x \in E) \land (p_{ik}=1, p_{ik}\in e_y \in E,
+    e_y \neq e_x) \iff t \neq k $$
+    Análogo para las clases y salas.
+  \item
+    Un evento debe tener todos sus recursos asignados en un mismo tiempo.
+    $$ \forall e \in E : e = (p_{pt}, c_{ci}, s_{sj}) \iff t = i = j $$
+    por comodidad diremos que \it{assign}($e$) $= t$ cuando un evento $e$ tiene
+    todos sus recursos asignados a un tiempo $t$.
+  \item
+    Todos los eventos deben estar asignados correctamente. Como la primera
+    restricción impide la una asignación errónea nos basta verificar que todos
+    los eventos estén asignados.
+    $$ \forall e \in E : \it{assign}(e) = t \in T$$
+\end{itemize}
+
+Para trabajar con un algoritmo de hormigas es necesario generar un ``camino''
+por el cual éstas puedan transitar, en esta ocasión utilizaremos un grafo
+completo en el cual cada nodo es un evento y todo par de eventos está conectado.
+Esta representación también es utilizada en \cite{socha2002max}.
+
+En este tipo de algoritmo existen dos puntos fundamentales que determinan su
+comportamiento. El primero es la probabilidad que tienen cada hormiga para ir de
+un nodo a otro y el segundo es la función de actualización de las feromonas que
+determinan esta probabilidad.
+
+La función de probabilidad de típica (\cite{colorni1991distributed}) de ACO es
+definida como sigue:
+\begin{equation} \label{eq:prob}
+  P_{ij}(t) = \frac{ [\tau_{ij}(t)]^{\alpha}\cdot [\eta_{ij}]^{\beta} }
+  { \sum_{j=1}^{n} [\tau_{ij}(t)]^{\alpha}\cdot [\eta_{ij}]^{\beta} }
+\end{equation}
+Donde $P_{ij}$ es la probabilidad de ir del nodo $i$ al nodo $j$, en nuestro
+caso, del evento $i$ al $j$. $\tau_{ij}$ es la feromona presente en dicho camino
+y $\eta$ es una heurística local, en nuestro caso será la duración del evento
+$j$ pues se espera asignar los eventos más largos primero. Los paramentros
+$\alpha$ y $\beta$ modifican el comportamiento de la formula.
+
+Por otro lado la función de actualización de las feromonas es la siguiente:
+\begin{equation} \label{eq:pher}
+  \tau_{ij}(t+z) = (1-\rho)\tau_{ij}(t) + \Delta \tau_{ij}
+\end{equation}
+Donde $0 \leq \rho \leq 1$ es el coeficiente de evaporación de la feromona y
+$\Delta\tau$ será el cambio producido en ella cuando la hormiga transita el
+camino.
+
+Para modificar el comportamiento general del algoritmo se da la opción de
+modificar los parámetros $\alpha, \beta, \Delta\tau$ y $\rho$ Además se espera
+que exista una feromona inicial $\rho_0$ cercana a cero.
 
 \section{Representación}\label{sec:repr}
-    %Representación matemática y estructura de datos que se usa (arreglos,
-    %matrices, etc.), por qué se usa, la relación entre la representación
-    %matemática y la estructura.
+%Representación matemática y estructura de datos que se usa (arreglos,
+%matrices, etc.), por qué se usa, la relación entre la representación
+%matemática y la estructura.
+Para representar el problema y sus soluciones se utilizan las estructuras y
+datos descritos en esta sección.
+
+Una \bf{instancia} contendrá todos los datos del problema, tiene un nombre y un
+arreglo para cada uno de sus recursos además de los tamaños de estos. Cada
+recurso tiene un nombre y un identificador. La instancia además contienen todos
+los eventos que deben ser asignados, cada evento tiene el identificador de los
+recursos que necesita, si puede usar cualquiera este campo se deja nulo.
+La estructura de instancia se muestra en la figura~\ref{fig:inst} mientras que
+la de eventos está en la figura~\ref{fig:event}
+
+\begin{figure}[htpb]
+  \centering
+  \begin{tabular}{c}
+    \lstinputlisting[language=c,firstline=8,lastline=15]{../src/structures.h}
+  \end{tabular}
+  \caption{Instancia.}
+  \label{fig:inst}
+\end{figure}
+
+\begin{figure}[htpb]
+  \centering
+  \begin{tabular}{c}
+    \lstinputlisting[language=c,firstline=17,lastline=23]{../src/structures.h}
+  \end{tabular}
+  \caption{Evento.}
+  \label{fig:event}
+\end{figure}
+
+Cada hormiga puede generar una \bf{solución} por lo que estas deben ser
+guardadas en una estructura individual. Una solución tendrá un puntero a la
+instancia que soluciona, una tabla con los recursos asignados, el camino que
+sigue la hormiga en el grafo, un arreglo con asignaciones de eventos y el valor
+total de la solución. Cabe destacar que las tablas de recursos si bien podrían
+ser booleanas se prefirió utilizar el indice del evento que utiliza el recurso
+para hacer más fácil la detección de errores, el recurso se considera ocupado
+si en la tabla tiene un valor distinto a \tt{NONE} (definido como -1).
+Se puede ver la estructura solución en la figura~\ref{fig:result}.
+
+\begin{figure}[htpb]
+  \centering
+  \begin{tabular}{c}
+    \lstinputlisting[language=c,firstline=31,lastline=45]{../src/structures.h}
+  \end{tabular}
+  \caption{Solución.}
+  \label{fig:result}
+\end{figure}
+
+Una asignación de un evento es un arreglo con la estructura descrita en la
+figura~\ref{fig:assign}, el tamaño de este arreglo será la duración del evento
+ya que algún evento puede ser completado en espacios de tiempo no consecutivos.
+La asignación posee los identificadores de todos los recursos involucrados y un
+valor local de asignación. El valor total de una solución es la suma de los
+valores locales.
+
+\begin{figure}[htpb]
+  \centering
+  \begin{tabular}{c}
+    \lstinputlisting[language=c,firstline=25,lastline=29]{../src/structures.h}
+  \end{tabular}
+  \caption{Asignación.}
+  \label{fig:assign}
+\end{figure}
+
+Digamos el grafo $G=(N,A)$, donde el conjunto $N$ representa los nodos, en
+nuestro caso $E$ (los eventos); y el conjunto $A$ contiene los arcos, al ser
+un grafo completo $(e_i, e_j) \forall i \neq j, e_x \in E$.
+
+Además las feromonas son guardadas en un arreglo bi-dimensional de
+$|E|\times|E|$ de manera que la feromona del arco $(e_i, e_j)$ esté en el dato
+\tt{pheromone[i][j]}.
+
+Por ejemplo, supongamos una instancia con 4 profesores, 4 clases y 4 salas a
+asignar en 4 espacios de tiempos y un cierta cantidad de eventos. Los datos
+quedarán representados en la figura~\ref{fig:ex:ins}.
+
+\begin{figure}[h]
+  \centering
+  \begin{tabular}{c|lcl}
+    \tt{instance} & \tt{name}       & \ra & \it{Ejemplo} \\
+                  & \tt{times[]}    & \ra & 
+          \{0: \it{Dia 1},\, 1: \it{Dia 2},\, 2: \it{Dia 3},\, 3: \it{Dia 4}\}\\
+                  & \tt{teachers[]} & \ra & 
+                      \{0: \it{T1},\, 1: \it{T2},\, 2: \it{T3},\, 3: \it{T4}\}\\
+                  & \tt{rooms[]}    & \ra &
+                      \{0: \it{R1},\, 1: \it{R2},\, 2: \it{R3},\, 3: \it{R4}\}\\
+                  & \tt{classes[]}  & \ra &
+                      \{0: \it{C1},\, 1: \it{C2},\, 2: \it{C3},\, 3: \it{C4}\}\\
+                  & \tt{s\_time}    & \ra & 4 \\
+                  & \tt{s\_teacher} & \ra & 4 \\
+                  & \tt{s\_rooms}   & \ra & 4 \\
+                  & \tt{s\_class}   & \ra & 4 \\
+                  & \tt{event}      & \ra & 
+                  \{0: \begin{tabular}{c|lcl}
+                         \tt{event} & \tt{duration} & \ra & 1 \\
+                                    & \tt{class}    & \ra & 0 \\
+                                    & \tt{teacher}  & \ra & 1 \\
+                                    & \tt{room}     & \ra & 3 \\
+                       \end{tabular},
+                    1: \dots \}\\
+  \end{tabular}
+  \caption{Ejemplo de instancia.}\label{fig:ex:ins}
+\end{figure}
+
+Los indices representan el identificador de cada recurso y evento, por lo tanto
+el evento 0 ($e_0$) tiene duración 1 y necesita del profesor 1 (\it{T2}), la
+sala 3 (\it{R4}) y el curso 0 (\it{C1}).
+
+Si una solución elige y logra asignar recursos para el evento $e_0$ como el
+primer evento de su camino en el tiempo 1 (\it{Dia 2}), sus matrices de
+ocupación de recursos quedarán como se muestra en la figura~\ref{fig:ex:tab}.
+
+\begin{figure}[htpb]
+  \centering
+  \begin{subfigure}[b]{.3\textwidth}
+    \begin{equation*}
+      \bordermatrix{
+        ~          & \it{T1} & \it{T2} & \it{T3} & \it{T4} \cr
+        \it{Dia 1} & -       & -       & -       & -       \cr
+        \it{Dia 2} & -       & 0       & -       & -       \cr
+        \it{Dia 3} & -       & -       & -       & -       \cr
+        \it{Dia 4} & -       & -       & -       & -       \cr
+      }
+    \end{equation*}
+    \caption{Profesor $\times$ Tiempo.}
+    \label{fig:mt}
+  \end{subfigure}
+  \hspace{2mm}
+  \begin{subfigure}[b]{.3\textwidth}
+    \begin{equation*}
+      \bordermatrix{
+        ~          & \it{C1} & \it{C2} & \it{C3} & \it{C4} \cr
+        \it{Dia 1} & -       & -       & -       & -       \cr
+        \it{Dia 2} & 0       & -       & -       & -       \cr
+        \it{Dia 3} & -       & -       & -       & -       \cr
+        \it{Dia 4} & -       & -       & -       & -       \cr
+      }
+    \end{equation*}
+    \caption{Sala $\times$ Tiempo.}
+    \label{fig:mr}
+  \end{subfigure}
+  \hspace{2mm}
+  \begin{subfigure}[b]{.3\textwidth}
+    \begin{equation*}
+      \bordermatrix{
+        ~          & \it{R1} & \it{R2} & \it{R3} & \it{R4} \cr
+        \it{Dia 1} & -       & -       & -       & -       \cr
+        \it{Dia 2} & -       & -       & -       & 0       \cr
+        \it{Dia 3} & -       & -       & -       & -       \cr
+        \it{Dia 4} & -       & -       & -       & -       \cr
+      }
+    \end{equation*}
+    \caption{Clase $\times$ Tiempo.}
+    \label{fig:mc}
+  \end{subfigure}
+  \caption{Matrices de ocupación de recursos.}
+  \label{fig:ex:tab}
+\end{figure}
+
+La asignación se registrará en el camino de la solución marcando como primer
+nodo visitado $e_0$. Este proceso se repite hasta completar todos los eventos.
+
+Si un evento no puede ser asignado por que sus recursos no tienen un tiempo
+libre en común, se le asignará un valor de -1 a cada uno de sus tiempos no
+asignados, así, si no se logra cumplir un recurso con tiempo 6 su valor total
+será de -6 lo que indica que no se han cumplido 6 condiciones.
+
 
 \section{Descripción del algoritmo}\label{sec:alg}
-    %Cómo fue implementando, interesa la implementación más que el algoritmo
-    %genérico, es decir, si se tiene que implementar SA, lo que se espera es que
-    %se explique en pseudo código la estructura general y en párrafo explicativo
-    %cada parte como fue implementada para su caso particular, si se utilizan
-    %operadores se debe explicar por que se utilizó ese operador, si fuera el
-    %caso de una técnica completa, si se utiliza recursión o no, etc. En este
-    %punto no se espera que se incluya código, eso va aparte.
+%Cómo fue implementando, interesa la implementación más que el algoritmo
+%genérico, es decir, si se tiene que implementar SA, lo que se espera es que
+%se explique en pseudo código la estructura general y en párrafo explicativo
+%cada parte como fue implementada para su caso particular, si se utilizan
+%operadores se debe explicar por que se utilizó ese operador, si fuera el
+%caso de una técnica completa, si se utiliza recursión o no, etc. En este
+%punto no se espera que se incluya código, eso va aparte.
+
+El algoritmo implementado consta de 3 pasos fundamentales para cada hormiga en
+cada iteración.
+\begin{enumerate}
+  \item
+    Elegir un nodo inicial aleatorio y asignarle recursos.
+  \item
+    Desde ese nodo elegir el nodo siguiente según la probabilidad dictada por la
+    ecuación~\ref{eq:prob} y asignarle recursos.
+  \item
+    Si no se han visitado todos los eventos repetir el paso 2. En otro caso el
+    valor de la solución es la suma del valor de las asignaciones.
+\end{enumerate}
+
+Cuando todas las hormigas han hecho sus caminos se compara el valor de sus
+soluciones y solo aquellas con la mejor solución depositan feromonas según la
+ecuación~\ref{eq:pher}.
+
+Como podemos notar la asignación de recursos es un problema en sí. En esta
+implementación la asignación se hace aleatoriamente entre los tiempos
+candidatos de la siguiente manera:
+\begin{enumerate}
+  \item
+    Se crea un set con todos los tiempos existentes.
+  \item
+    Por cada recurso requerido se verifica en la tabla los tiempos no
+    disponibles y se eliminan del set.
+  \item
+    Si el tamaño del set resultante es mayor o igual la duración del evento se
+    le asignan tiempos aleatorios entre los disponibles.
+  \item
+    Si el tamaño del set es menor se le da a la asignación un valor de -1 por
+    cada tiempo no asignado (su duración).
+\end{enumerate}
+
+Este proceso está plasmado en el algortimo~\ref{alg:assign}
+
+\begin{algorithm}
+  \caption{Pseudo código para asignar recursos. \it{assign}($e_i$)}
+  \label{alg:assign}
+  \begin{algorithmic}[1]
+    \Require Un evento $e_i$.
+    \Ensure El evento con recursos asignados y un valor de asignación.
+    \State \it{disponibles} \la \it{new\_set}() 
+    \ForAll{tiempo \it{t}}
+      \State \bf{append} \it{t} \ra \it{disponibles}
+    \EndFor
+    \ForAll{recurso \it{r} necesitado por $e_i$}
+      \ForAll{tiempo \it{t}}
+        \If{\it{r} tiene asignado el tiempo \it{t}}
+          \State \bf{remove} \it{t} \bf{from} \it{disponibles}
+        \EndIf
+      \EndFor
+    \EndFor
+    \If{$|$\it{disponible}$|$ $\geq$ duración de $e_i$}
+      \For{duración de $e_i$}
+        \State \bf{pop} aleatorio a \it{disponibles} \ra t
+        \ForAll{recurso \it{r} necesitado por $e_i$}
+          \State Asignar el recurso $r$ al tiempo $t$ y actualizar su tabla.
+        \EndFor
+      \EndFor
+      \State Valor de la asignación \la duración de $e_i$
+    \Else
+      \State Valor de la asignación \la -(duración de $e_i$)
+    \EndIf
+  \end{algorithmic}
+\end{algorithm}
+
+La optimización por camino de hormigas resultante queda reflejada en el
+algoritmo~\ref{alg:ants}.
+
+\begin{algorithm}
+  \caption{Pseudo código del algoritmo de hormigas.}
+  \label{alg:ants}
+  \begin{algorithmic}[1]
+    \Require Una instancia.
+    \Ensure La mejor solución encontrada.
+    \State \it{feromona}[\it{\#eventos}][\it{\#eventos}] \la
+           \it{new\_array}(\it{init\_value} = $\rho_0$)
+    \State \it{solución}[\it{\#hormigas}] = \it{new\_array}()
+    \State \it{M} \la Mejor solución encontrada hasta el momento
+    \For{\it{\#iteraciones}}
+      \For{\it{i} \bf{from} 0 \bf{to} \it{\#hormigas}}
+        \State \it{solución}[\it{i}] = \it{new\_result}()
+        \State \it{actual} \la evento aleatorio
+        \State \it{assign}(\it{actual})
+        \While{Queden eventos sin visitar}
+          \State \it{siguiente} \la elegir según la ecuación~\ref{eq:prob} entre
+          los eventos aún no visitados.
+          \State \it{assign}(\it{siguiente})
+          \State agregar (\it{actual, siguiente}) al camino de esta solución.
+          \State \it{actual} \la \it{siguiente}
+        \EndWhile
+      \EndFor
+      \State \it{mejores} = \it{new\_array}()
+      \For{\it{i} \bf{from} 0 \bf{to} \it{\#hormigas}}
+        \If{\it{hormiga}[i].\it{valor} $\geq$ mejor valor de la iteración}
+          \State \bf{append} \it{hormiga}[i].\it{camino} \ra \it{mejores}
+        \EndIf
+      \EndFor
+      \State Aplicar evaporación según la ecuación~\ref{eq:pher}
+      \ForAll{\it{camino} \bf{in} \it{mejores}}
+        \State Agregar feromona al \it{camino}
+      \EndFor
+    \EndFor
+    \State Imprimir \it{M}
+  \end{algorithmic}
+\end{algorithm}
+
 
 \section{Experimentos}\label{sec:exp}
-    %Se necesita saber como experimentaron, como definieron parámetros, como los
-    %fueron modificando, cuales problemas se trataron, instancias, por que
-    %ocuparon esos problemas.
+%Se necesita saber como experimentaron, como definieron parámetros, como los
+%fueron modificando, cuales problemas se trataron, instancias, por que
+%ocuparon esos problemas.
+Para la experimentación se utilizaron las instancias más recientes de 
+\cite{post2016third} disponibles en su pagina 
+web\footnote{https://www.utwente.nl/ctit/hstt/archives/}.
+
+Los archivos se dividen en instancias artificiales y reales, y se presentan en
+formato XHSTT\cite{post2014xhstt} el cual da una gran libertad a la hora de
+definir recursos y restricciones segundarías.
+
+Debido a la complejidad que presentan algunas de estas instancias para este
+trabajo se experimentó con un subconjunto de ellas que presentan las siguiente
+características:
+\begin{enumerate}
+  \item
+    La instancia tiene al menos los recursos \emph{time}, \emph{class} y
+    \emph{teacher} y todos sus eventos tienen estos recursos asignados.
+  \item
+    Opcionalmente pueden tener el recurso \emph{room}.
+  \item
+    Los eventos pueden tener \emph{room} asignado o libre.
+\end{enumerate}
+
+Además solo se busca generar soluciones factibles por lo que las restricciones
+planteadas por las instancias son ignoradas.
 
 \section{Resultados}\label{sec:res}
-    %Que fue lo que se logró con la experimentación, incluir tablas y
-    %parámetros, gráficos si fuera posible, lo más explicativo posible.
+  %Que fue lo que se logró con la experimentación, incluir tablas y
+  %parámetros, gráficos si fuera posible, lo más explicativo posible.
 
 \section{Conclusiones}\label{sec:conc}
-    %De acuerdo a la introducción que se hizo, entregar afirmaciones RELEVANTES
-    %basadas en los experimentos y sus resultados.
+  %De acuerdo a la introducción que se hizo, entregar afirmaciones RELEVANTES
+  %basadas en los experimentos y sus resultados.
 
-\section{Bibliografía}\label{sec:bib}
-    %Indicando toda la información necesaria de acuerdo al tipo de documento
-    %revisado. Las referencias deben ser citadas en el documento.
+\bibliographystyle{ieeetr}
+\bibliography{bibliography}
 
-\bibliographystyle{plain}
-\bibliography{Referencias}
 \end{document} 
+
+
+% vim: set ts=2 sw=2 sts=2 tw=80 : %
