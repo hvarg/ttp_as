@@ -485,7 +485,7 @@ algoritmo~\ref{alg:ants}.
     \Require Una instancia.
     \Ensure La mejor solución encontrada.
     \State \it{feromona}[\it{\#eventos}][\it{\#eventos}] \la
-           \it{new\_array}(\it{init\_value} = $\rho_0$)
+           \it{new\_array}(\it{init\_value} = $\tau_0$)
     \State \it{solución}[\it{\#hormigas}] = \it{new\_array}()
     \State \it{M} \la Mejor solución encontrada hasta el momento
     \For{\it{\#iteraciones}}
@@ -543,11 +543,82 @@ características:
 \end{enumerate}
 
 Además solo se busca generar soluciones factibles por lo que las restricciones
-planteadas por las instancias son ignoradas.
+planteadas por las instancias son ignoradas. Por ello además si se alcanza una
+solución factible antes de completar las iteraciones el algoritmo terminará
+inmediatamente.
+
+Las instancias que cumplen con los requisitos planteados son las siguientes:
+\begin{itemize}
+  \item \bf{ArtificialSudoku4x4}
+    con 4 profesores, 4 clases, 4 salas, 4 tiempos y 16 eventos.
+  \item \bf{BrazilInstance1}
+    con 8 profesores, 3 clases, 0 salas, 25 tiempos y 21 eventos.
+  \item \bf{BrazilInstance2}
+    con 14 profesores, 6 clases, 0 salas, 25 tiempos y 63 eventos.
+  \item \bf{BrazilInstance4}
+    con 23 profesores, 12 clases, 0 salas, 25 tiempos y 127 eventos.
+  \item \bf{BrazilInstance7}
+    con 33 profesores, 20 clases, 0 salas, 25 tiempos y 205 eventos.
+  \item \bf{ArtificialORLibrary-hdtt4}
+    con 4 profesores, 4 clases, 4 salas, 30 tiempos y 59 eventos.
+  \item \bf{ArtificialORLibrary-hdtt6}
+    con 6 profesores, 6 clases, 6 salas, 30 tiempos y 125 eventos.
+  \item \bf{ArtificialORLibrary-hdtt8}
+    con 8 profesores, 8 clases, 8 salas, 30 tiempos y 197 eventos.
+\end{itemize}
+
+Para todas estas instancias se probará con 5 y 20 hormigas para 5, 25, 100,
+500, 1000 y 5000 iteraciones.
+
+Además como parámetros se utilizará $\alpha = 1, \beta = 0.5, \tau_0 = 0.001,
+\rho = 0.2$ y $\Delta\tau = 0.005$
 
 \section{Resultados}\label{sec:res}
-  %Que fue lo que se logró con la experimentación, incluir tablas y
-  %parámetros, gráficos si fuera posible, lo más explicativo posible.
+%Que fue lo que se logró con la experimentación, incluir tablas y
+%parámetros, gráficos si fuera posible, lo más explicativo posible.
+Los resultados con 5 hormigas se muestran en la tabla~\ref{tab:5ants} mientras
+que los tiempos de ejecución están en la tabla~\ref{tab:5ants:time}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|r|r|r|r|r|r|}
+  \hline
+                 & 5   & 25  & 100 & 500 & 1000 & 5000  \\\hline
+  \bf{Sudoku4x4} & 0   & -   & -   & -   & -    & -     \\\hline
+  \bf{Brazil1}   & 0   & -   & -   & -   & -    & -     \\\hline
+  \bf{Brazil2}   & 0   & -   & -   & -   & -    & -     \\\hline
+  \bf{Brazil4}   & -21 & -20 & -14 & -11 & -10  & -13   \\\hline
+  \bf{Brazil7}   & -28 & -24 & -24 & -19 & -24  & -22   \\\hline
+  \bf{ORL-hdtt4} & -24 & -19 & -18 & -16 & -15  & -13   \\\hline
+  \bf{ORL-hdtt6} & -26 & -27 & -27 & -27 & -25  & -25   \\\hline
+  \bf{ORL-hdtt8} & -40 & -36 & -35 & -33 & -34  & -34   \\\hline
+\end{tabular}
+\caption{Resultados con 5 hormigas.}\label{tab:5ants}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|r|r|r|r|r|r|}
+  \hline
+                 & 5         & 25     & 100    & 500    & 1000    & 5000     \\\hline
+  \bf{Sudoku4x4} & 0,006 (3) & -      & -      & -      & -       & -        \\\hline
+  \bf{Brazil1}   & 0,009 (2) & -      & -      & -      & -       & -        \\\hline
+  \bf{Brazil2}   & 0,020 (4) & -      & -      & -      & -       & -        \\\hline
+  \bf{Brazil4}   & 0,167     & 0,770  & 2,821  & 14,122 & 28,956  & 2:23,07  \\\hline
+  \bf{Brazil7}   & 0,523     & 2,618  & 10,152 & 50,211 & 1:44,46 & 7:44,90  \\\hline
+  \bf{ORL-hdtt4} & 0,035     & 0,121  & 0,462  & 2,264  & 4,444   & 22,688   \\\hline
+  \bf{ORL-hdtt6} & 0,149     & 0,660  & 2,659  & 13,384 & 26,196  & 2:11,92  \\\hline
+  \bf{ORL-hdtt8} & 0,446     & 2,158  & 8,879  & 43,332 & 1:28,74 & 7:17,94  \\\hline
+\end{tabular}
+\caption{Tiempos con 5 hormigas.}\label{tab:5ants:time}
+\end{table}
+
+Como podemos ver de estos resultados el algoritmo no tiene problemas para
+encontrar soluciones a problemas pequeños aunque tenga que asignar también
+salas, pero para los problemas más grandes no logra encontrar soluciones y aún
+con mayor número de iteraciones no hace una buena explotación. Por ello para los
+experimentos con 20 hormigas se cambio a $\Delta\tau = 0.01$ para mejorar la
+explotación.
 
 \section{Conclusiones}\label{sec:conc}
   %De acuerdo a la introducción que se hizo, entregar afirmaciones RELEVANTES
