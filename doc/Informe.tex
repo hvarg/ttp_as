@@ -39,9 +39,6 @@
 \end{abstract}
 
 \section{Introducción}\label{sec:intro}
-%Una explicación breve del contenido del informe. Es decir, detalla:
-%Propósito, Estructura del Documento, Descripción (muy breve) del Problema y
-%Motivación.
 En este informe se planteará e implementará un algoritmo de hormigas para la 
 resolución de problemas básicos del \emph{Course Timetabling Problem} (CTP).
 El problema radica en encontrar una asignación de recursos factibles para
@@ -75,9 +72,6 @@ Los resultados son presentados en la sección~\ref{sec:res} y las conclusiones
 obtenidas de ellos se enuncian en la sección~\ref{sec:conc}.
 
 \section{Definición del Problema}\label{sec:def}
-%Explicación del problema que se va a estudiar, en que consiste, cuales son
-%sus variables, restricciones y objetivos de manera general. Variantes más
-%conocidas que existen.
 El CTP es un \emph{scheduling problem}, es decir un problema de asignación de
 recursos.
 En particular en los \emph{timetabling problems} el recurso principal a asignar
@@ -138,20 +132,6 @@ mejor de las soluciones factibles (por ejemplo, tener clases seguidas, de
 preferencia no utilizar ciertos horarios, etc).
 
 \section{Estado del Arte}\label{sec:art}
-%Lo más importante que se ha hecho hasta ahora con relación al problema.
-%Debería responder preguntas como las siguientes ?`cuando surge?, ?`qué
-%métodos se han usado para resolverlo?, ?`cuales son los mejores algoritmos
-%que se han creado hasta la fecha?, ?`qué representaciones han tenido los
-%mejores resultados?, ?`cuál es la tendencia actual?, tipos de movimientos,
-%heurísticas, métodos completos, tendencias, etc... Puede incluir gráficos
-%comparativos, o explicativos.\\ La información que describen en este punto
-%se basa en los estudios realizados con antelación respecto al tema. Dichos
-%estudios se citan de manera que quien lea su estudio pueda también acceder
-%a las referencias que usted revisó. Las citas se realizan mediante el
-%comando \verb+\cite{ }+.  Por ejemplo, para hacer referencia al artículo de
-%algoritmos híbridos para problemas de satisfacción de restricciones
-%~\cite{Prosser93Hybrid}.
-
 El CTP es un problema clásico de asignación de recursos y debido a su
 generalidad han existido diferentes métodos de encarar este problema.
 Al ser un problema combinatorio complejo (NP-Hard) no existen algoritmos
@@ -164,7 +144,6 @@ destacan los \emph{Evolutionary Algorithms} (EA), \emph{Iterated local search}
 Optimization} (ACO).
 
 \section{Modelo}\label{sec:mod}
-%Uno o más modelos matemáticos para el problema.
 Digamos $E$ el conjunto de eventos a distribuir y $T$ el conjunto de espacios de
 tiempo disponibles. Cada evento es una n-tupla de recursos, en este caso $E = P
 \times C \times S$ con $p_{it} \in P$ una variable binaria que representa la
@@ -228,9 +207,6 @@ modificar los parámetros $\alpha, \beta, \Delta\tau$ y $\rho$ Además se espera
 que exista una feromona inicial $\rho_0$ cercana a cero.
 
 \section{Representación}\label{sec:repr}
-%Representación matemática y estructura de datos que se usa (arreglos,
-%matrices, etc.), por qué se usa, la relación entre la representación
-%matemática y la estructura.
 Para representar el problema y sus soluciones se utilizan las estructuras y
 datos descritos en esta sección.
 
@@ -400,14 +376,6 @@ será de -6 lo que indica que no se han cumplido 6 condiciones.
 
 
 \section{Descripción del algoritmo}\label{sec:alg}
-%Cómo fue implementando, interesa la implementación más que el algoritmo
-%genérico, es decir, si se tiene que implementar SA, lo que se espera es que
-%se explique en pseudo código la estructura general y en párrafo explicativo
-%cada parte como fue implementada para su caso particular, si se utilizan
-%operadores se debe explicar por que se utilizó ese operador, si fuera el
-%caso de una técnica completa, si se utiliza recursión o no, etc. En este
-%punto no se espera que se incluya código, eso va aparte.
-
 El algoritmo implementado consta de 3 pasos fundamentales para cada hormiga en
 cada iteración.
 \begin{enumerate}
@@ -518,9 +486,6 @@ algoritmo~\ref{alg:ants}.
 
 
 \section{Experimentos}\label{sec:exp}
-%Se necesita saber como experimentaron, como definieron parámetros, como los
-%fueron modificando, cuales problemas se trataron, instancias, por que
-%ocuparon esos problemas.
 Para la experimentación se utilizaron las instancias más recientes de 
 \cite{post2016third} disponibles en su pagina 
 web\footnote{https://www.utwente.nl/ctit/hstt/archives/}.
@@ -547,25 +512,28 @@ planteadas por las instancias son ignoradas. Por ello además si se alcanza una
 solución factible antes de completar las iteraciones el algoritmo terminará
 inmediatamente.
 
-Las instancias que cumplen con los requisitos planteados son las siguientes:
-\begin{itemize}
-  \item \bf{ArtificialSudoku4x4}
-    con 4 profesores, 4 clases, 4 salas, 4 tiempos y 16 eventos.
-  \item \bf{BrazilInstance1}
-    con 8 profesores, 3 clases, 0 salas, 25 tiempos y 21 eventos.
-  \item \bf{BrazilInstance2}
-    con 14 profesores, 6 clases, 0 salas, 25 tiempos y 63 eventos.
-  \item \bf{BrazilInstance4}
-    con 23 profesores, 12 clases, 0 salas, 25 tiempos y 127 eventos.
-  \item \bf{BrazilInstance7}
-    con 33 profesores, 20 clases, 0 salas, 25 tiempos y 205 eventos.
-  \item \bf{ArtificialORLibrary-hdtt4}
-    con 4 profesores, 4 clases, 4 salas, 30 tiempos y 59 eventos.
-  \item \bf{ArtificialORLibrary-hdtt6}
-    con 6 profesores, 6 clases, 6 salas, 30 tiempos y 125 eventos.
-  \item \bf{ArtificialORLibrary-hdtt8}
-    con 8 profesores, 8 clases, 8 salas, 30 tiempos y 197 eventos.
-\end{itemize}
+Las instancias que cumplen con los requisitos planteados se presentan en la
+tabla~\ref{tab:inst}. Los resultados de las mismas están disponibles en la
+página web del
+concurso\footnote{https://www.utwente.nl/ctit/hstt/archives/XHSTT-2014/overview.html}\footnote{https://www.utwente.nl/ctit/hstt/archives/XHSTT-2012/}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|r|r|r|r|r|r|}
+  \hline
+  \bf{Instancia} & \bf{Profesores} & \bf{Clases} & \bf{Salas} & \bf{Tiempos} &
+  \bf{Eventos} & \bf{Duración Total}  \\\hline
+  \bf{Sudoku4x4} &  4  &  4  &  4  &  4  &  16  &   16  \\\hline
+  \bf{Brazil1}   &  8  &  3  &  0  & 25  &  21  &   75  \\\hline
+  \bf{Brazil2}   & 14  &  6  &  0  & 25  &  63  &  150  \\\hline
+  \bf{Brazil4}   & 23  & 12  &  0  & 25  & 127  &  300  \\\hline
+  \bf{Brazil7}   & 33  & 20  &  0  & 25  & 205  &  500  \\\hline
+  \bf{ORL-hdtt4} &  4  &  4  &  4  & 30  &  59  &  120  \\\hline
+  \bf{ORL-hdtt6} &  6  &  6  &  6  & 30  & 125  &  180  \\\hline
+  \bf{ORL-hdtt8} &  8  &  8  &  8  & 30  & 197  &  240  \\\hline
+\end{tabular}
+\caption{Instancias a solucionar.}\label{tab:inst}
+\end{table}
 
 Para todas estas instancias se probará con 5 y 20 hormigas para 5, 25, 100,
 500, 1000 y 5000 iteraciones.
@@ -574,8 +542,6 @@ Además como parámetros se utilizará $\alpha = 1, \beta = 0.5, \tau_0 = 0.001,
 \rho = 0.2$ y $\Delta\tau = 0.005$
 
 \section{Resultados}\label{sec:res}
-%Que fue lo que se logró con la experimentación, incluir tablas y
-%parámetros, gráficos si fuera posible, lo más explicativo posible.
 Los resultados con 5 hormigas se muestran en la tabla~\ref{tab:5ants} mientras
 que los tiempos de ejecución están en la tabla~\ref{tab:5ants:time}.
 
@@ -586,7 +552,7 @@ que los tiempos de ejecución están en la tabla~\ref{tab:5ants:time}.
                  & 5   & 25  & 100 & 500 & 1000 & 5000  \\\hline
   \bf{Sudoku4x4} & 0   & -   & -   & -   & -    & -     \\\hline
   \bf{Brazil1}   & 0   & -   & -   & -   & -    & -     \\\hline
-  \bf{Brazil2}   & 0   & -   & -   & -   & -    & -     \\\hline
+  \bf{Brazil2}   & -5  & -3  & 0   & -   & -    & -     \\\hline
   \bf{Brazil4}   & -21 & -20 & -14 & -11 & -10  & -13   \\\hline
   \bf{Brazil7}   & -28 & -24 & -24 & -19 & -24  & -22   \\\hline
   \bf{ORL-hdtt4} & -24 & -19 & -18 & -16 & -15  & -13   \\\hline
@@ -600,15 +566,15 @@ que los tiempos de ejecución están en la tabla~\ref{tab:5ants:time}.
 \centering
 \begin{tabular}{|l|r|r|r|r|r|r|}
   \hline
-                 & 5         & 25     & 100    & 500    & 1000    & 5000     \\\hline
-  \bf{Sudoku4x4} & 0,006 (3) & -      & -      & -      & -       & -        \\\hline
-  \bf{Brazil1}   & 0,009 (2) & -      & -      & -      & -       & -        \\\hline
-  \bf{Brazil2}   & 0,020 (4) & -      & -      & -      & -       & -        \\\hline
-  \bf{Brazil4}   & 0,167     & 0,770  & 2,821  & 14,122 & 28,956  & 2:23,07  \\\hline
-  \bf{Brazil7}   & 0,523     & 2,618  & 10,152 & 50,211 & 1:44,46 & 7:44,90  \\\hline
-  \bf{ORL-hdtt4} & 0,035     & 0,121  & 0,462  & 2,264  & 4,444   & 22,688   \\\hline
-  \bf{ORL-hdtt6} & 0,149     & 0,660  & 2,659  & 13,384 & 26,196  & 2:11,92  \\\hline
-  \bf{ORL-hdtt8} & 0,446     & 2,158  & 8,879  & 43,332 & 1:28,74 & 7:17,94  \\\hline
+                 & 5         & 25 & 100   & 500    & 1000    & 5000    \\\hline
+  \bf{Sudoku4x4} & 0,006 (3) & -  & -     & -      & -       & -       \\\hline
+  \bf{Brazil1}   & 0,009 (2) & -  & -     & -      & -       & -       \\\hline
+  \bf{Brazil2}   & 0,039 & 0,130 & 0,380 (77) & -  & -       & -       \\\hline
+  \bf{Brazil4}   & 0,167 & 0,770 & 2,821  & 14,122 & 28,956  & 2:23,07 \\\hline
+  \bf{Brazil7}   & 0,523 & 2,618 & 10,152 & 50,211 & 1:44,46 & 7:44,90 \\\hline
+  \bf{ORL-hdtt4} & 0,035 & 0,121 & 0,462  & 2,264  & 4,444   & 22,688  \\\hline
+  \bf{ORL-hdtt6} & 0,149 & 0,660 & 2,659  & 13,384 & 26,196  & 2:11,92 \\\hline
+  \bf{ORL-hdtt8} & 0,446 & 2,158 & 8,879  & 43,332 & 1:28,74 & 7:17,94 \\\hline
 \end{tabular}
 \caption{Tiempos con 5 hormigas.}\label{tab:5ants:time}
 \end{table}
@@ -616,13 +582,73 @@ que los tiempos de ejecución están en la tabla~\ref{tab:5ants:time}.
 Como podemos ver de estos resultados el algoritmo no tiene problemas para
 encontrar soluciones a problemas pequeños aunque tenga que asignar también
 salas, pero para los problemas más grandes no logra encontrar soluciones y aún
-con mayor número de iteraciones no hace una buena explotación. Por ello para los
-experimentos con 20 hormigas se cambio a $\Delta\tau = 0.01$ para mejorar la
-explotación.
+con mayor número de iteraciones los resultados no mejoran.
+Por ello para los experimentos con 20 hormigas se cambio a $\Delta\tau = 0.008$
+para mejorar la explotación.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|r|r|r|r|r|r|}
+  \hline
+                 & 5   & 25  & 100 & 500 & 1000 & 5000  \\\hline
+  \bf{Sudoku4x4} & 0   & -   & -   & -   & -    & -     \\\hline
+  \bf{Brazil1}   & 0   & -   & -   & -   & -    & -     \\\hline
+  \bf{Brazil2}   & -3  & 0   & -   & -   & -    & -     \\\hline
+  \bf{Brazil4}   & -19 & -17 & -15 & -15 & -13  & -12   \\\hline
+  \bf{Brazil7}   & -32 & -26 & -24 & -22 & -16  & -19   \\\hline
+  \bf{ORL-hdtt4} & -18 & -16 & -15 & -16 & -13  & -14   \\\hline
+  \bf{ORL-hdtt6} & -31 & -29 & -27 & -26 & -24  & -22   \\\hline
+  \bf{ORL-hdtt8} & -39 & -37 & -33 & -34 & -33  & -32   \\\hline
+\end{tabular}
+\caption{Resultados con 20 hormigas.}\label{tab:20ants}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|r|r|r|r|r|r|}
+  \hline
+                 & 5         & 25  & 100    & 500    & 1000    & 5000     \\\hline
+  \bf{Sudoku4x4} & 0,006 (1) & -   & -      & -      & -       & -        \\\hline
+  \bf{Brazil1}   & 0,008 (1) & -   & -      & -      & -       & -        \\\hline
+  \bf{Brazil2}   & 0,109  & 0,256 (13) & -  & -      & -       & -        \\\hline
+  \bf{Brazil4}   & 0,529  & 2,644  & 10,353 & 52,463 & 1:50,33 & 9:50,28  \\\hline
+  \bf{Brazil7}   & 1,939  & 9,713  & 37,595 & 3:05,38& 6:13,34 & 34:29,47 \\\hline
+  \bf{ORL-hdtt4} & 0,094  & 0,416  & 1,674  & 8,146  & 17,850  & 1:29,05  \\\hline
+  \bf{ORL-hdtt6} & 0,525  & 2,495  & 9,905  & 51,038 & 1:39,73 & 8:54,07  \\\hline
+  \bf{ORL-hdtt8} & 1,655  & 8,208  & 32,598 & 2:44,59& 5:23,99 & 26:36,66 \\\hline
+\end{tabular}
+\caption{Tiempos con 20 hormigas.}\label{tab:20ants:time}
+\end{table}
+
+Como podemos notar los resultados no varían notablemente. Era de esperar
+teniendo en cuenta trabajos como \cite{socha2003ant} y
+\cite{rossi2002comparison} que afirman el mal comportamiento de los algoritmos
+basados en hormigas para instancias grandes.
+
+Las únicas instancias que logran llegar a resultados factibles son aquellas en
+las cuales los tiempos totales son bajos y se logra en muy pocas iteraciones,
+este resultado es congruente con \cite{rossi2002comparison}.
 
 \section{Conclusiones}\label{sec:conc}
-  %De acuerdo a la introducción que se hizo, entregar afirmaciones RELEVANTES
-  %basadas en los experimentos y sus resultados.
+Tal como concluyen trabajos previos (\cite{socha2003ant},
+\cite{rossi2002comparison}) un algoritmo basado en hormigas con asignaciones
+aleatorias deja mucho que desear a la hora de solucionar instancias grandes.
+
+El comportamiento del algoritmo es bueno para instancias pequeñas ya que por
+combinatoria es muy posible caer en un resultado correcto, esto no es posible
+para las instancias grandes. Al mejorar la explotación se logra que el resultado
+mejore, pero no hasta el punto de hacer la instancia factible. Por otro lado, si
+se incrementa la exploración el algoritmo solo buscará aleatoriamente hasta
+encontrar buenos resultados, lo cual es demasiado costoso, en ese caso
+convendría encontrar la solución secuencialmente.
+
+Por otro lado los tiempos de ejecución dependen completamente del problema. Lo
+determinante en este punto son la cantidad de eventos y su duración. Cuando un
+evento dura más de 1, el algoritmo lo divide en una cantidad de sub-eventos
+acorde a su duración haciendo que el tiempo total (la suma del tiempo de cada
+evento) una medida clara de cuanto durará la ejecución. Además existe cierto
+costo asociado a asignar más de un recurso (como en las instancias con salas
+libres), pero no es tanto como se esperaba.
 
 \bibliographystyle{ieeetr}
 \bibliography{bibliography}
