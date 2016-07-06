@@ -63,7 +63,7 @@ void print_res(struct result *R)
   printf("\nPath:  ");
   for (j = 0; j < R->ins->s_event - 1; j++)
     printf("%d -> ", R->path[j]);
-  printf("%d", R->path[j]);
+  printf("%d\n", R->path[j]);
 
   printf("Value: %f\n", R->value);
   for (j = 0; j < R->ins->s_event; j++) {
@@ -255,6 +255,7 @@ int main(int argc, const char * args[])
     ph_update(best->path);
     best_index = -1;
     best_value = -1000.0;
+    if (best->value == 0.0) break;
   }
 
   print_res(best);
