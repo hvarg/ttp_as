@@ -32,9 +32,7 @@ struct result{
   /* Puntero a la instancia resuelta. */
   struct instance *ins;
   /* Tablas de utilizacion de recursos por tiempo:
-   *  txt: Teacher X Time
-   *  cxt: Class X Time
-   *  rxt: Room X Time */
+   *  txt: Teacher X Time, cxt: Class X Time, rxt: Room X Time */
   short   **txt, **cxt, **rxt;
   /* Camino de eventos. */
   short  *path;

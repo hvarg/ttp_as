@@ -35,7 +35,13 @@
 \maketitle
 
 \begin{abstract}
-  %Resumen del informe en no más de 10 líneas.
+  En este trabajo se considera una simplificación del típico ``course
+  timetabling problem'' atacando solo la factibilidad de la solución por medio
+  de un algoritmo de hormigas.
+  Se explica la generación del grafo a recorrer junto a cómo se comportarán las
+  hormigas en la búsqueda de soluciones y se presentan los resultados de la
+  aplicación de dicho algoritmo a un set de instancias reales selectas de la
+  competencia internacional de resolución del problema.
 \end{abstract}
 
 \section{Introducción}\label{sec:intro}
@@ -56,12 +62,12 @@ las ventajas y desventajas de elegir esta metaheurística por sobre otras
 similares.
 
 Este documento se organiza como sigue. En la sección~\ref{sec:def} se define el
-problema junto al conjunto típico de variables y restricciones que lo conforman
+problema junto al conjunto típico de variables y restricciones que lo conforman,
 además del vocabulario básico necesario para entender correctamente este
 informe. 
 En la sección~\ref{sec:art} se hace un seguimiento bibliográfico del problema
-con especial énfasis en los trabajos previos de resolución por algoritmos de
-optimización de hormigas y sus resultados.
+con especial énfasis en los trabajos previos de resolución por algoritmos
+basados en metaheurísticas y sus resultados.
 La sección~\ref{sec:mod} presenta el modelo utilizado para la creación del
 algoritmo y como se relacionan los parámetros definidos en éste al
 funcionamiento y rendimiento del programa generado.
@@ -85,8 +91,8 @@ ciertas tareas), el \emph{examination timetabling problem}\cite{di2000tabu}
 En particular en CTP se busca asignar cierta cantidad de clases en un tiempo
 acotado y utilizando los recursos necesarios para ello.
 
-Variantes del CTP son tanto  el \emph{University Curse Timetabling  Problem}
-como \emph{School Curse Timetabling Problem}. Ambos son básicamente el
+Variantes del CTP son tanto  el \emph{University Course Timetabling  Problem}
+como \emph{School Course Timetabling Problem}. Ambos son básicamente el
 mismo problema de asignación, pero se diferencian en las restricciones para
 determinar la factibilidad de una solución, pues, en general, para las escuelas
 se debe mantener a los estudiantes en clases por grandes periodos consecutivos
@@ -138,10 +144,93 @@ Al ser un problema combinatorio complejo (NP-Hard) no existen algoritmos
 completos que encuentren soluciones factibles en poco tiempo y por ello ha
 florecido una amplia gama de técnicas incompletas de búsqueda de soluciones.
 
-Entre las metaheurísticas comúnmente utilizadas para encarar el problema se
-destacan los \emph{Evolutionary Algorithms} (EA), \emph{Iterated local search}
-(ILS), \emph{Simulted Annealing} (SA), \emph{Tabu Search} y \emph{Ant colony
-Optimization} (ACO).
+Si bien no se pueden determinar los orígenes del problema, uno de los primeros
+trabajos relacionados puede ser rastreado hasta el 1963 por
+Gotlieb\cite{gotlieb1963construction}, la investigación posterior es variada y
+existen trabajos analizándola como \cite{schaerf1999survey}.
+
+En los últimos años, entre las metaheurísticas comúnmente utilizadas para
+encarar el problema, se destacan los \emph{Evolutionary Algorithms} (EA),
+\emph{Iterated local search} (ILS), \emph{Simulted Annealing} (SA),
+\emph{Tabu Search} (TS) y \emph{Ant colony Optimization} (ACO).
+
+Los algoritmos evolutivos se basan en la mecánica de la evolución natural: la
+supervivencia del más apto. En EA una solución buena tiene muchas posibilidades
+de ser los padres de la siguiente generación; cada solución puede mutar y
+reproducirse y así, con el paso del tiempo, mejorar las soluciones.
+
+Podemos encontrar variadas implementaciones de EA para solucionar el CTP. 
+En \cite{erben1995genetic} se resuelve un CTP simplificado como el que se
+presenta en este documento. Para la representación de los cromosomas se utiliza
+una n-tupla de los recursos, el procesos de mutación se basa en liberar algún
+recurso y cambiarlo por otro disponible mientras que en el cruzamiento se
+intercambian los recursos entre dos soluciones. Los resultados de este trabajo
+enfatizan lo difícil que es encontrar los parámetros adecuados y lo costoso que
+es el proceso computacionalmente. Atacando éste último problema existen trabajos
+como \cite{abramson1991parallel} que aprovechan las ventajas de la computación
+paralela para mejorar los resultados.
+
+Por otra parte se destaca el trabajo de \cite{weare1995hybrid} que utilizando un
+\emph{hybrid genetic algorithm} enfrenta el problema más de forma más realista: 
+con restricciones segundarías variables. La factibilidad de la solución siempre
+se garantiza y además se agrega al capacidad definir otras restricciones que
+mejoran la aplicabilidad de la solución pero a la vez hacen al problema más
+difícil.
+
+La ILS se basa en la idea de mejorar la búsqueda local generando nuevas
+soluciones de perturbaciones de la solución actual, generalmente este proceso da
+mejores resultados que comenzar con soluciones aleatorias. Una descripción
+detallada de un ILS puede ser encontrada en \cite{stutzle1998local}.
+
+En \cite{rossi2002local} se aplica ILS para solucionar un CTP simplificado
+basado en el problema real presentado por la universidad de Napier. El
+vecindario se define como una sucesión de eventos ordenados en el tiempo y se
+generan movimientos como \tt{swap} y permutaciones.
+
+Se puede considerar a SA como una variante de la búsqueda local inspirada en el
+comportamiento físico del calor. Muchos trabajos utilizan SA para atacar el CTP,
+en \cite{thompson1996variants} se hace una revisión de ellos. Generalmente se
+hacen optimizaciones en diferentes partes del proceso y existen versiones
+secuenciales y paralelas del mismo.
+
+El funcionamiento de TS se basa en el uso de una memoria selectiva para obtener
+un buen balance entre la exploración y explotación de las soluciones. El
+desplazamiento entre soluciones locales se da por el uso de movimientos y solo
+cuando se mejora la solución, utilizando una lista tabú para evitar caer en
+ciclos.
+
+Al igual que SA goza de gran popularidad a la hora de enfrentar
+diferentes \emph{timetabling problems}. Particularmente para CTP el trabajo de
+\cite{lu2010adaptive} presenta un un TS adaptativo y en \cite{aladag2009effect}
+se discute como afectan los movimientos a la generación del vecindario de
+soluciones y se proponen nuevos movimientos que pueden dar mejores resultados.
+
+Los algoritmos de hormigas y \emph{ant systems} (AS) se basan en imitar el
+comportamiento de las hormigas al determinar los caminos óptimos para encontrar
+comida por medio de las feromonas que dejan al desplazarse.
+Han sido utilizados para resolver diversos problemas, entre ellos el CTP.
+
+En el trabajo de Socha \emph{et al.}\cite{socha2003ant} se hace
+una revisión del desempeño de estos algoritmos en el marco de la
+\emph{Metaheuristics Network}\footnote{http://www.metaheuristics.org/} y en
+\cite{socha2002max} de los mismos autores se presenta un \emph{MAX-MIN} AS para
+solucionar el CTP. De este trabajo se destaca la forma de representar el camino
+por el cual se desplazarán las hormigas como un grafo completamente conectado
+entre los eventos.
+
+En \cite{post2016third} se presenta una competencia de resolución de CTP con
+instancias reales. En el trabajo se comparan los resultados obtenidos por varios
+grupos competidores y en la página web se mantienen las instancias actualizadas
+junto a los mejores resultados encontrados por el momento.
+
+Por último, en \cite{rossi2002comparison} se hace una comparación del
+rendimiento entre algoritmos básicos de las heurísticas descritas anteriormente
+en la resolución del CTP. Los resultados indican que para instancias pequeñas
+todos los algoritmos tienen un buen comportamiento, en especial ILS, SA y ACO.
+Mientras las instancias incrementan su tamaño la que peor responde al cambio
+es ACO mientras que para instancias muy grandes la mayoría de los algoritmos ni
+siquiera logran cumplir la factibilidad. El algoritmo mejor evaluado en esta
+comparación es ILS aunque no siempre llega a soluciones factibles. 
 
 \section{Modelo}\label{sec:mod}
 Digamos $E$ el conjunto de eventos a distribuir y $T$ el conjunto de espacios de
@@ -221,7 +310,7 @@ la de eventos está en la figura~\ref{fig:event}
 \begin{figure}[htpb]
   \centering
   \begin{tabular}{c}
-    \lstinputlisting[language=c,firstline=8,lastline=15]{../src/structures.h}
+    \lstinputlisting[language=c,firstline=8,lastline=14]{../src/structures.h}
   \end{tabular}
   \caption{Instancia.}
   \label{fig:inst}
@@ -230,7 +319,7 @@ la de eventos está en la figura~\ref{fig:event}
 \begin{figure}[htpb]
   \centering
   \begin{tabular}{c}
-    \lstinputlisting[language=c,firstline=17,lastline=23]{../src/structures.h}
+    \lstinputlisting[language=c,firstline=17,lastline=21]{../src/structures.h}
   \end{tabular}
   \caption{Evento.}
   \label{fig:event}
@@ -249,7 +338,7 @@ Se puede ver la estructura solución en la figura~\ref{fig:result}.
 \begin{figure}[htpb]
   \centering
   \begin{tabular}{c}
-    \lstinputlisting[language=c,firstline=31,lastline=45]{../src/structures.h}
+    \lstinputlisting[language=c,firstline=31,lastline=42]{../src/structures.h}
   \end{tabular}
   \caption{Solución.}
   \label{fig:result}
@@ -265,7 +354,7 @@ valores locales.
 \begin{figure}[htpb]
   \centering
   \begin{tabular}{c}
-    \lstinputlisting[language=c,firstline=25,lastline=29]{../src/structures.h}
+    \lstinputlisting[language=c,firstline=25,lastline=28]{../src/structures.h}
   \end{tabular}
   \caption{Asignación.}
   \label{fig:assign}
@@ -410,7 +499,7 @@ candidatos de la siguiente manera:
     cada tiempo no asignado (su duración).
 \end{enumerate}
 
-Este proceso está plasmado en el algortimo~\ref{alg:assign}
+Este proceso está plasmado en el algoritmo~\ref{alg:assign}.
 
 \begin{algorithm}
   \caption{Pseudo código para asignar recursos. \it{assign}($e_i$)}
@@ -620,9 +709,9 @@ para mejorar la explotación.
 \caption{Tiempos con 20 hormigas.}\label{tab:20ants:time}
 \end{table}
 
-Como podemos notar los resultados no varían notablemente. Era de esperar
+Como podemos notar los resultados no varían notablemente. Era de esperar,
 teniendo en cuenta trabajos como \cite{socha2003ant} y
-\cite{rossi2002comparison} que afirman el mal comportamiento de los algoritmos
+\cite{rossi2002comparison}, que afirman el mal comportamiento de los algoritmos
 basados en hormigas para instancias grandes.
 
 Las únicas instancias que logran llegar a resultados factibles son aquellas en
@@ -634,26 +723,44 @@ Tal como concluyen trabajos previos (\cite{socha2003ant},
 \cite{rossi2002comparison}) un algoritmo basado en hormigas con asignaciones
 aleatorias deja mucho que desear a la hora de solucionar instancias grandes.
 
-El comportamiento del algoritmo es bueno para instancias pequeñas ya que por
-combinatoria es muy posible caer en un resultado correcto, esto no es posible
+El comportamiento del algoritmo es bueno para instancias pequeñas, ya que, por
+combinatoria, es muy posible caer en un resultado correcto; esto no es posible
 para las instancias grandes. Al mejorar la explotación se logra que el resultado
-mejore, pero no hasta el punto de hacer la instancia factible. Por otro lado, si
-se incrementa la exploración el algoritmo solo buscará aleatoriamente hasta
-encontrar buenos resultados, lo cual es demasiado costoso, en ese caso
-convendría encontrar la solución secuencialmente.
+mejore ligeramente, pero no hasta el punto de hacer la instancia factible.
+Por otro lado, si se incrementa la exploración el algoritmo, éste solo buscará
+aleatoriamente hasta encontrar buenos resultados. Este proceso es demasiado
+costoso por lo que convendría encontrar la solución secuencialmente.
 
-Por otro lado los tiempos de ejecución dependen completamente del problema. Lo
+Los tiempos de ejecución dependen completamente del problema. Lo
 determinante en este punto son la cantidad de eventos y su duración. Cuando un
-evento dura más de 1, el algoritmo lo divide en una cantidad de sub-eventos
-acorde a su duración haciendo que el tiempo total (la suma del tiempo de cada
+evento dura más de uno, el algoritmo lo divide en una cantidad de sub-eventos
+acorde a su duración, haciendo del tiempo total (la suma del tiempo de cada
 evento) una medida clara de cuanto durará la ejecución. Además existe cierto
 costo asociado a asignar más de un recurso (como en las instancias con salas
 libres), pero no es tanto como se esperaba.
+
+Dos factores pueden ser la base del mal desempeño del algoritmo: la elección de
+parámetros y la asignación local. Con respecto a los parámetros no se logró
+encontrar una asignación que destacara por sobre las demás a la hora de entregar
+soluciones. Este es un fenómeno común y uno de los problemas de heurísticas con
+muchos parámetros como las hormigas. Generalmente se requiere un largo proceso
+de prueba y error para determinar los parámetros correctos.
+
+La asignación local por su parte puede ser determinante en la generación de
+soluciones y es un problema en si mismo. La ventaja de tener una asignación
+aleatoria es la simpleza que presenta tanto en la implementación como en la
+ejecución, pero por otro lado, aplicar una heurística en este proceso puede
+mejorar notablemente los resultados.
+
+Finalmente, se destaca la facilidad que tiene implementar un algoritmo de
+hormigas cuando ya se ha generado un grafo por el cual ellas recorran. En
+general, este proceso puede hacerse sin preocuparse demasiado por las
+restricciones del problema si se tiene un buen modelo para verificarlas.
+La complejidad radica en la generación misma del grafo, ya que no todo problema
+puede ser visualizado de esta manera.
 
 \bibliographystyle{ieeetr}
 \bibliography{bibliography}
 
 \end{document} 
-
-
 % vim: set ts=2 sw=2 sts=2 tw=80 : %
